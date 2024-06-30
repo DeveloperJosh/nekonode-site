@@ -27,16 +27,16 @@ const Navbar = () => {
         </div>
         <div className="hidden md:flex space-x-2">
           <Link href="/" legacyBehavior>
-            <a className="text-gray-300 hover:text-white">Home</a>
+             <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Home</button>
           </Link>
           <Link href="/about" legacyBehavior>
-            <a className="text-gray-300 hover:text-white">About</a>
+              <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">About</button>
           </Link>
           <Link href="/contact" legacyBehavior>
-            <a className="text-gray-300 hover:text-white">Contact</a>
+              <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Contact</button>
           </Link>
           <Link href="https://github.com/DeveloperJosh/anime-cli" legacyBehavior>
-            <a className="text-gray-300 hover:text-white">Get NekoNode CLI</a>
+              <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Get NekoNode CLI</button>
           </Link>
         </div>
       </div>
