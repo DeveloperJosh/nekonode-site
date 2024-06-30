@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import ReactPlayer from 'react-player';
-import dotenv from 'dotenv';
-
-dotenv.config();
-const api = process.env.API;
+const api = "https://api.nekonode.net";
 
 const EpisodePage = () => {
   const router = useRouter();

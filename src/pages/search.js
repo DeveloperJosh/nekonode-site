@@ -5,10 +5,7 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Link from 'next/link';
 import Image from 'next/image';
-import dotenv from 'dotenv';
-
-dotenv.config();
-const api = process.env.API;
+const api = "https://api.nekonode.net";
 
 const SearchResults = () => {
   const router = useRouter();

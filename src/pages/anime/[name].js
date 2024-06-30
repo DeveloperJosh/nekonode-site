@@ -7,9 +7,6 @@ import SearchBar from '../../components/SearchBar';
 import Image from 'next/image';
 import PlayerModal from '../../components/PlayerModal';
 import Footer from '@/components/Footer';
-import dotenv from 'dotenv';
-
-dotenv.config();
 const api = "https://api.nekonode.net";
 
 const fetcher = (url) => axios.get(url).then((res) => res.data);

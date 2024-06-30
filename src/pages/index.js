@@ -3,11 +3,7 @@ import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
 import AnimeList from '../components/AnimeList';
 import Footer from '../components/Footer';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const api = process.env.API;
+const api = "https://api.nekonode.net";
 
 const HomePage = ({ latestAnime, page }) => (
   <div className="bg-gray-900 min-h-screen text-gray-200 flex flex-col">
