@@ -31,7 +31,6 @@ const SearchResults = () => {
 
   return (
     <div className="bg-gray-900 min-h-screen text-gray-200">
-      <Navbar />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-4 text-yellow-500">Search Results for "{query}"</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

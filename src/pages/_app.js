@@ -1,6 +1,9 @@
 import '../styles/globals.css';
 import { useEffect } from 'react';
 import Head from 'next/head';
+import Navbar from '../components/Navbar';
+import SearchBar from '../components/SearchBar';
+import Footer from '../components/Footer';
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -22,7 +25,14 @@ function MyApp({ Component, pageProps }) {
         <meta property="og:description" content="NekoNode the best Anime CLI/Site there is" />
         <title>NekoNode</title>
       </Head>
-      <Component {...pageProps} />
+      <div className="bg-gray-900 min-h-screen text-gray-200 flex flex-col">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 flex-grow">
+          <SearchBar />
+          <Component {...pageProps} />
+        </div>
+        <Footer />
+      </div>
     </>
   );
 }
