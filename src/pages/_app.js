@@ -28,7 +28,7 @@ function MyApp({ Component, pageProps }) {
       <div className="bg-gray-900 min-h-screen text-gray-200 flex flex-col">
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex-grow">
-          <SearchBar />
+
           <Component {...pageProps} />
         </div>
         <Footer />

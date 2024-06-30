@@ -3,10 +3,10 @@ import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import axios from 'axios';
 import Image from 'next/image';
-import PlayerModal from '../../components/PlayerModal';
+import ReactPlayer from 'react-player';
 
 const api = "https://api.nekonode.net";
-const fetcher = (url) => axios.get(url).then((res) => res.data);
+const fetcher = url => axios.get(url).then(res => res.data);
 
 const AnimePage = () => {
   const router = useRouter();
@@ -16,17 +16,39 @@ const AnimePage = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
-  const [loadingEpisode, setLoadingEpisode] = useState(false);
   const [episodeSources, setEpisodeSources] = useState({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!name) {
+    if (name) {
+      fetchAndSelectEpisode(1);
+    } else {
       router.push('/');
     }
-  }, [name, router]);
+  }, [name]);
 
-  if (router.isFallback) {
+  const fetchAndSelectEpisode = async (episodeNumber) => {
+    const episodeId = `${name}-episode-${episodeNumber}`;
+    if (!episodeSources[episodeId]) {
+      try {
+        const response = await axios.get(`${api}/api/watch/${episodeId}`);
+        const sources = response.data;
+        setEpisodeSources(prevState => ({ ...prevState, [episodeId]: sources }));
+        setSelectedEpisode({ episodeNumber, episodeId, sources });
+      } catch (error) {
+        console.error('Error fetching episode sources:', error);
+      }
+    } else {
+      setSelectedEpisode({ episodeNumber, episodeId, sources: episodeSources[episodeId] });
+    }
+  };
+
+  const handleEpisodeSelect = episodeNumber => fetchAndSelectEpisode(episodeNumber);
+
+  const handlePageChange = (direction) => {
+    setCurrentPage(prev => prev + direction);
+  };
+
+  if (!animeData && !error) {
     return <div className="text-center mt-8 text-white">Loading...</div>;
   }
 
@@ -34,134 +56,104 @@ const AnimePage = () => {
     return <div className="text-center mt-8 text-red-500">Failed to load anime data</div>;
   }
 
-  if (!animeData) {
-    return <div className="text-center mt-8 text-white">Loading...</div>;
-  }
-
   const { animeInfo, episodes } = animeData;
   const episodesPerPage = 20;
   const totalPages = Math.ceil(episodes.length / episodesPerPage);
   const currentEpisodes = episodes.slice((currentPage - 1) * episodesPerPage, currentPage * episodesPerPage);
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleEpisodeSelect = async (episode) => {
-    const episodeId = `${name}-episode-${episode.episodeNumber}`;
-    setLoadingEpisode(true);
-    if (!episodeSources[episodeId]) {
-      try {
-        const response = await axios.get(`${api}/api/watch/${episodeId}`);
-        setEpisodeSources((prevState) => ({ ...prevState, [episodeId]: response.data }));
-      } catch (error) {
-        console.error('Error fetching episode sources:', error);
-      }
-    }
-    setSelectedEpisode({ ...episode, episodeId });
-    setLoadingEpisode(false);
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setSelectedEpisode(null);
-  };
-
-  const handleNextEpisode = () => {
-    if (selectedEpisode && selectedEpisode.episodeNumber < episodes.length) {
-      const nextEpisode = episodes.find(ep => ep.episodeNumber === selectedEpisode.episodeNumber + 1);
-      handleEpisodeSelect(nextEpisode);
-    }
-  };
-
-  const handlePreviousEpisode = () => {
-    if (selectedEpisode && selectedEpisode.episodeNumber > 1) {
-      const prevEpisode = episodes.find(ep => ep.episodeNumber === selectedEpisode.episodeNumber - 1);
-      handleEpisodeSelect(prevEpisode);
-    }
-  };
-
   return (
     <div className="bg-gray-900 min-h-screen text-gray-200">
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h1 className="text-4xl font-bold text-center mb-4 text-yellow-500">{animeInfo.title}</h1>
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="relative w-48 h-64 mb-6 md:mb-0 md:mr-6 flex-shrink-0">
-              <Image
-                src={animeInfo.image}
-                alt={animeInfo.title}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-lg shadow-lg"
-                placeholder="blur"
-                blurDataURL="/placeholder.jpg"
-              />
-            </div>
-            <div className="text-gray-300">
-              <p className="mb-4"><span className="font-semibold">Description:</span> {animeInfo.description}</p>
-              <p className="mb-2"><span className="font-semibold">Status:</span> {animeInfo.status}</p>
-              <p className="mb-2"><span className="font-semibold">Genres:</span> {animeInfo.genres.join(', ')}</p>
-              <p className="mb-2"><span className="font-semibold">Released:</span> {animeInfo.released}</p>
-              <p className="mb-2"><span className="font-semibold">Total Episodes:</span> {animeInfo.totalEpisodes}</p>
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-center mb-4 text-yellow-500">Episodes</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {currentEpisodes.map((episode) => (
-              <div key={episode.episodeNumber} className="bg-gray-700 p-4 rounded-lg shadow hover:bg-gray-600 text-center">
-                <button
-                  className="mt-2 bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600"
-                  onClick={() => handleEpisodeSelect(episode)}
-                >
-                  Watch {episode.title}
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-6">
-            {currentPage > 1 && (
-              <button onClick={handlePreviousPage} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600">
-                Previous Page
+        <div className="flex">
+          <aside className="w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4 text-yellow-500">Episodes</h2>
+            <ul>
+              {currentEpisodes.map(episode => (
+                <li key={episode.episodeNumber} className="mb-2">
+                  <button
+                    className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === episode.episodeNumber ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
+                    onClick={() => handleEpisodeSelect(episode.episodeNumber)}
+                  >
+                    {`EP ${episode.episodeNumber}`}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={() => handlePageChange(-1)}
+                className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600"
+                disabled={currentPage <= 1}
+              >
+                Previous
               </button>
-            )}
-            {currentPage < totalPages && (
-              <button onClick={handleNextPage} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600">
-                Next Page
+              <button
+                onClick={() => handlePageChange(1)}
+                className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 ml-auto"
+                disabled={currentPage >= totalPages}
+              >
+                Next
               </button>
-            )}
-          </div>
+            </div>
+          </aside>
+          <main className="w-3/4 ml-4">
+            <EpisodePlayer episode={selectedEpisode} />
+            <br />
+            <AnimeDetails animeInfo={animeInfo} />
+          </main>
         </div>
-        {selectedEpisode && (
-          <PlayerModal
-            isOpen={isModalOpen}
-            onRequestClose={handleModalClose}
-            episode={selectedEpisode}
-            onPrevious={handlePreviousEpisode}
-            onNext={handleNextEpisode}
-            sources={episodeSources[selectedEpisode.episodeId] || []}
-          />
-        )}
       </div>
     </div>
   );
 };
 
-export async function getServerSideProps({ params }) {
-  return {
-    props: {
-      initialData: null, // Remove this if you don't need initial data on server-side
-    },
-  };
-}
+const EpisodePlayer = ({ episode }) => (
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-yellow-500 mb-4 text-center">
+      Episode {episode ? episode.episodeNumber : '1'}
+    </h2>
+    <div className="player-wrapper">
+      {episode ? (
+        <ReactPlayer
+          url={episode.sources.find(source => source.quality === '1080p')?.source || episode.sources[0]?.source}
+          controls
+          width="100%"
+          height="100%"
+          className="react-player"
+        />
+      ) : (
+        <p className="text-center text-gray-300">Select an episode to play</p>
+      )}
+    </div>
+  </div>
+);
+
+const AnimeDetails = ({ animeInfo }) => (
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col md:flex-row items-center">
+    <ImageWrapper image={animeInfo.image} title={animeInfo.title} />
+    <div className="text-gray-300">
+      <h1 className="text-4xl font-bold text-left mb-4 text-yellow-500">{animeInfo.title}</h1>
+      <p className="mb-4"><span className="font-semibold">Description:</span> {animeInfo.description}</p>
+      <p className="mb-2"><span className="font-semibold">Status:</span> {animeInfo.status}</p>
+      <p className="mb-2"><span className="font-semibold">Genres:</span> {animeInfo.genres.join(', ')}</p>
+      <p className="mb-2"><span className="font-semibold">Released:</span> {animeInfo.released}</p>
+      <p className="mb-2"><span className="font-semibold">Total Episodes:</span> {animeInfo.totalEpisodes}</p>
+    </div>
+  </div>
+);
+
+const ImageWrapper = ({ image, title }) => (
+  <div className="relative w-48 h-64 mb-6 md:mb-0 md:mr-6 flex-shrink-0">
+    <Image
+      src={image}
+      alt={title}
+      layout="fill"
+      objectFit="cover"
+      className="rounded-lg shadow-lg"
+      placeholder="blur"
+      blurDataURL="/placeholder.jpg"
+    />
+  </div>
+);
 
 export default AnimePage;
