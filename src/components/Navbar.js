@@ -5,7 +5,7 @@ const Navbar = () => {
     <nav className="bg-gray-800 p-4">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" legacyBehavior>
-          <a className="text-yellow-500 text-2xl font-bold">AnimeHub</a>
+          <a className="text-yellow-500 text-2xl font-bold"> NekoNode</a>
         </Link>
         <div>
           <Link href="/" legacyBehavior>

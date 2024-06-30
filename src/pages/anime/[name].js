@@ -1,34 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import useSWR from 'swr';
 import axios from 'axios';
 import Navbar from '../../components/Navbar';
 import SearchBar from '../../components/SearchBar';
 import Image from 'next/image';
 import PlayerModal from '../../components/PlayerModal';
+import Footer from '@/components/Footer';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const api = process.env.API;
+const api = "https://api.nekonode.net";
 
-// Helper function to clean anime name
-const AnimePage = ({ animeData }) => {
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
+const AnimePage = () => {
   const router = useRouter();
   const { name } = router.query;
+
+  const { data: animeData, error } = useSWR(name ? `${api}/api/anime/${name}` : null, fetcher);
+
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [loadingEpisode, setLoadingEpisode] = useState(false);
   const [episodeSources, setEpisodeSources] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (!name) {
+      router.push('/');
+    }
+  }, [name, router]);
+
   if (router.isFallback) {
     return <div className="text-center mt-8 text-white">Loading...</div>;
   }
 
-  if (!animeData) {
+  if (error) {
     return <div className="text-center mt-8 text-red-500">Failed to load anime data</div>;
   }
 
+  if (!animeData) {
+    return <div className="text-center mt-8 text-white">Loading...</div>;
+  }
+
   const { animeInfo, episodes } = animeData;
-  const [currentPage, setCurrentPage] = useState(1);
   const episodesPerPage = 20;
   const totalPages = Math.ceil(episodes.length / episodesPerPage);
   const currentEpisodes = episodes.slice((currentPage - 1) * episodesPerPage, currentPage * episodesPerPage);
@@ -144,28 +160,17 @@ const AnimePage = ({ animeData }) => {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
 
 export async function getServerSideProps({ params }) {
-  let name = params.name;
-
-  try {
-    const response = await axios.get(`${api}/api/anime/${name}`);
-    return {
-      props: {
-        animeData: response.data,
-      },
-    };
-  } catch (error) {
-    console.error('Error fetching anime data:', error);
-    return {
-      props: {
-        animeData: null,
-      },
-    };
-  }
+  return {
+    props: {
+      initialData: null, // Remove this if you don't need initial data on server-side
+    },
+  };
 }
 
 export default AnimePage;

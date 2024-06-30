@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="bg-gray-800 text-white py-8">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         <div className="flex flex-col md:flex-row items-center mb-4 md:mb-0">
-          <span className="text-lg font-semibold">Anime Lovers Hub</span>
+          <span className="text-lg font-semibold">NekoNode</span>
         </div>
         <div className="flex flex-col md:flex-row items-center">
           <nav className="flex flex-col md:flex-row md:items-center mb-4 md:mb-0">
@@ -35,7 +35,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="text-center mt-4">
-        <p className="text-gray-400">&copy; {new Date().getFullYear()} Anime Lovers Hub. All rights reserved.</p>
+        <p className="text-gray-400">&copy; {new Date().getFullYear()} NekoNode. All rights reserved.</p>
       </div>
     </footer>
   );
