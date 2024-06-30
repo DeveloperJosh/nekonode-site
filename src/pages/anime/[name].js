@@ -21,8 +21,6 @@ const AnimePage = () => {
   useEffect(() => {
     if (name) {
       fetchAndSelectEpisode(1);
-    } else {
-      router.push('/');
     }
   }, [name]);
 
