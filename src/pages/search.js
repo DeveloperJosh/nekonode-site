@@ -5,6 +5,10 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Link from 'next/link';
 import Image from 'next/image';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const api = process.env.API;
 
 const SearchResults = () => {
   const router = useRouter();
@@ -16,7 +20,7 @@ const SearchResults = () => {
 
     const fetchResults = async () => {
       try {
-        const response = await axios.get(`https://api.nekonode.net/api/search/${query}`);
+        const response = await axios.get(`${api}/api/search/${query}`);
         setResults(response.data);
       } catch (error) {
         console.error('Error fetching search results:', error);

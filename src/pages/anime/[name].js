@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import dynamic from 'next/dynamic';
 import Navbar from '../../components/Navbar';
 import SearchBar from '../../components/SearchBar';
 import Image from 'next/image';
 import PlayerModal from '../../components/PlayerModal';
+import dotenv from 'dotenv';
 
+dotenv.config();
+const api = process.env.API;
+
+// Helper function to clean anime name
 const AnimePage = ({ animeData }) => {
   const router = useRouter();
   const { name } = router.query;
@@ -45,8 +49,12 @@ const AnimePage = ({ animeData }) => {
     const episodeId = `${name}-episode-${episode.episodeNumber}`;
     setLoadingEpisode(true);
     if (!episodeSources[episodeId]) {
-      const response = await axios.get(`https://api.nekonode.net/api/watch/${episodeId}`);
-      setEpisodeSources((prevState) => ({ ...prevState, [episodeId]: response.data }));
+      try {
+        const response = await axios.get(`${api}/api/watch/${episodeId}`);
+        setEpisodeSources((prevState) => ({ ...prevState, [episodeId]: response.data }));
+      } catch (error) {
+        console.error('Error fetching episode sources:', error);
+      }
     }
     setSelectedEpisode({ ...episode, episodeId });
     setLoadingEpisode(false);
@@ -84,8 +92,8 @@ const AnimePage = ({ animeData }) => {
               <Image
                 src={animeInfo.image}
                 alt={animeInfo.title}
-                fill
-                style={{ objectFit: 'cover' }}
+                layout="fill"
+                objectFit="cover"
                 className="rounded-lg shadow-lg"
                 placeholder="blur"
                 blurDataURL="/placeholder.jpg"
@@ -141,8 +149,10 @@ const AnimePage = ({ animeData }) => {
 };
 
 export async function getServerSideProps({ params }) {
+  let name = params.name;
+
   try {
-    const response = await axios.get(`https://api.nekonode.net/api/anime/${params.name}`);
+    const response = await axios.get(`${api}/api/anime/${name}`);
     return {
       props: {
         animeData: response.data,

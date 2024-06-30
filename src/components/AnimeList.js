@@ -11,10 +11,9 @@ const AnimeList = ({ animes }) => {
             <Image
               src={anime.image}
               alt={anime.name}
-              layout="fill"
-              objectFit="contain"
-              className="rounded-lg"
-              unoptimized
+              fill
+              sizes='200px'
+              className="rounded-lg object-contain"
             />
           </div>
           <h2 className="text-xl font-bold text-yellow-500 mb-2">{anime.name}</h2>
