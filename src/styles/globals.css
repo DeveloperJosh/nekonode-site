@@ -31,3 +31,28 @@ body {
     text-wrap: balance;
   }
 }
+
+.Modal {
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-4xl z-50;
+}
+
+.Overlay {
+  @apply fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-75 z-40;
+}
+
+/* Customize the scrollbar width */
+::-webkit-scrollbar {
+  width: 8px; /* Adjust as needed */
+}
+
+/* Customize the scrollbar track */
+::-webkit-scrollbar-track {
+  background: #2D3748; /* Track color */
+}
+
+/* Customize the scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: #D69E2E; /* Thumb color */
+  border-radius: 10px; /* Rounded corners */
+  border: 3px solid #2D3748; /* Border around the thumb */
+}
