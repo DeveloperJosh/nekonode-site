@@ -56,3 +56,8 @@ body {
   border-radius: 10px; /* Rounded corners */
   border: 3px solid #2D3748; /* Border around the thumb */
 }
+
+.anime-card {
+  max-width: 260px; /* Adjust the width as needed */
+  margin: auto; /* Center the card */
+}
