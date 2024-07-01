@@ -1,13 +1,24 @@
 import axios from 'axios';
 import { load } from 'cheerio';
 import dotenv from 'dotenv';
+import NodeCache from 'node-cache';
+
 dotenv.config();
 
+const cache = new NodeCache({ stdTTL: 3600 }); // Cache TTL set to 1 hour (3600 seconds)
 const baseUrl = process.env.BASE_URL;
 
 export default async function handler(req, res) {
   let { animeName } = req.query;
   let encodedAnimeName = encodeURIComponent(animeName);
+
+  const cacheKey = `animeInfo_${encodedAnimeName}`;
+
+  // Check if the response is already cached
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return res.json(cachedData);
+  }
 
   try {
     const response = await axios.get(`${baseUrl}/category/${encodedAnimeName}`);
@@ -47,8 +58,6 @@ export default async function handler(req, res) {
       }
     });
 
-    //episodes.reverse();
-
     let anime = req.query.animeName;
     anime = anime.replace(/\s+/g, '-').toLowerCase();
     anime = anime.replace(/:/g, '');
@@ -86,7 +95,12 @@ export default async function handler(req, res) {
       totalEpisodes,
     };
 
-    res.json({ animeInfo, episodes });
+    const responseData = { animeInfo, episodes };
+    
+    // Cache the response data
+    cache.set(cacheKey, responseData);
+
+    res.json(responseData);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve anime' });
   }

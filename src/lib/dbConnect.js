@@ -28,7 +28,7 @@ async function dbConnect() {
       useUnifiedTopology: true,
     };
 
-    cached.promise = mongoose.connect(MONGO_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGO_URI).then((mongoose) => {
       console.log('MongoDB Connected');
       return mongoose;
     });

@@ -1,4 +1,3 @@
-// src/pages/profile.js
 import { useEffect, useState } from 'react';
 import withAuth from '../hoc/withAuth';
 import axios from 'axios';
@@ -11,16 +10,26 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
-      try {
-        const profileResponse = await axios.get('/api/auth/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUsername(profileResponse.data.username);
-        setEmail(profileResponse.data.email); 
-      } catch (error) {
-        console.error('Error fetching profile:', error);
+      const cachedProfile = localStorage.getItem('profile');
+
+      if (cachedProfile) {
+        const profile = JSON.parse(cachedProfile);
+        setUsername(profile.username);
+        setEmail(profile.email);
+      } else {
+        try {
+          const profileResponse = await axios.get('/api/auth/profile', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const profile = profileResponse.data;
+          setUsername(profile.username);
+          setEmail(profile.email);
+          localStorage.setItem('profile', JSON.stringify(profile));
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
       }
     };
 
@@ -38,6 +47,7 @@ const Profile = () => {
         <button
           onClick={() => {
             logout();
+            localStorage.removeItem('profile'); // Clear cached profile on logout
           }}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 w-full mt-6"
         >
