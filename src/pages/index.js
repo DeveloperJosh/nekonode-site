@@ -13,14 +13,14 @@ const HomePage = ({ latestAnime, page }) => (
             {page > 1 && (
               <a
                 href={`/?page=${page - 1}`}
-                className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600"
+                className="bg-yellow-500 text-gray-800 px-3 py-1 rounded hover:bg-yellow-600"
               >
                 Previous Page
               </a>
             )}
             <a
               href={`/?page=${page + 1}`}
-              className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600"
+              className="bg-yellow-500 text-gray-800 px-3 py-1 rounded hover:bg-yellow-600"
             >
               Next Page
             </a>
