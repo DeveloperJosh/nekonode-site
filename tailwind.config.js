@@ -5,6 +5,9 @@ export const content = [
   "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
 ];
 export const theme = {
+  theme: {
+    darkmode: true,
+  },
   extend: {
     backgroundImage: {
       "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -12,11 +15,8 @@ export const theme = {
     },
   },
   variants: {
-    extend: {
-      scrollbar: ['rounded']
-    },
+    extend: {},
+    
   },
 };
-export const plugins = [
-  require('tailwind-scrollbar'),
-];
+export const plugins = [];

@@ -23,6 +23,7 @@ const AnimePage = () => {
     }
   }, [name]);
 
+
   const fetchAndSelectEpisode = async (episodeNumber) => {
     const episodeId = `${name}-episode-${episodeNumber}`;
     if (!episodeSources[episodeId]) {

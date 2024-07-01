@@ -1,19 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { logout } from '../utils/auth';
 import SearchBar from './SearchBar';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleLogout = () => {
+    logout();
+    setIsAuthenticated(false);
+  };
+
   return (
     <nav className="bg-gray-800 p-3 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" legacyBehavior>
-          <a className="text-yellow-500 text-xl font-bold">NekoNode</a>
+        <Link href="/" className="text-yellow-500 text-xl font-bold">
+          NekoNode
         </Link>
         <div className="flex-1 mx-3">
           <SearchBar />
@@ -26,34 +38,66 @@ const Navbar = () => {
           </button>
         </div>
         <div className="hidden md:flex space-x-2">
-          <Link href="/" legacyBehavior>
-             <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Home</button>
-          </Link>
-          <Link href="/about" legacyBehavior>
-              <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">About</button>
-          </Link>
-          <Link href="/contact" legacyBehavior>
-              <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Contact</button>
+          <Link href="/" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
+            Home
           </Link>
           <Link href="https://github.com/DeveloperJosh/anime-cli" legacyBehavior>
-              <button className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Get NekoNode CLI</button>
+            <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Get NekoNode CLI</a>
           </Link>
+          {isAuthenticated ? (
+            <>
+              <Link href="/profile" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
+                Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" legacyBehavior>
+                <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Login</a>
+              </Link>
+              <Link href="/register" legacyBehavior>
+                <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Register</a>
+              </Link>
+            </>
+          )}
         </div>
       </div>
       {isMenuOpen && (
         <div className="md:hidden bg-gray-700 rounded-lg shadow-lg mt-2">
-          <Link href="/" legacyBehavior>
-            <a className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">Home</a>
+          <Link href="/" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+            Home
           </Link>
-          <Link href="/about" legacyBehavior>
-            <a className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">About</a>
+          <Link href="https://github.com/DeveloperJosh/anime-cli" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+            Get NekoNode CLI
           </Link>
-          <Link href="/contact" legacyBehavior>
-            <a className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">Contact</a>
-          </Link>
-          <Link href="https://github.com/DeveloperJosh/anime-cli" legacyBehavior>
-            <a className="block text-gray-300 hover:text-white py-2 px-4">Get NekoNode CLI</a>
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link href="/profile" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+                Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="block text-gray-300 hover:text-white py-2 px-4 w-full text-left border-t border-gray-600"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+                Login
+              </Link>
+              <Link href="/register" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+                Register
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>
