@@ -17,7 +17,7 @@ const SearchResults = () => {
     const fetchResults = async () => {
       setHasError(false); // Reset error state on new fetch
       try {
-        const response = await axios.get(`https://api.nekonode.net/api/search/${query}?page=${currentPage}`);
+        const response = await axios.get(`/api/search/${query}?page=${currentPage}`);
         setResults(response.data.animeMatches);
       } catch (error) {
         console.error('Error fetching search results:', error);

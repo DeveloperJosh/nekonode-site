@@ -1,7 +1,6 @@
 import React from 'react';
 import AnimeList from '../components/AnimeList';
-
-const api = "https://api.nekonode.net";
+import axios from 'axios';
 
 const HomePage = ({ latestAnime, page }) => (
   <div className="bg-gray-900 min-h-screen text-gray-200">
@@ -34,15 +33,29 @@ const HomePage = ({ latestAnime, page }) => (
 
 export async function getServerSideProps({ query }) {
   const page = query.page ? parseInt(query.page, 10) : 1;
-  const res = await fetch(`${api}/api/latest?page=${page}`);
-  const latestAnime = await res.json();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-  return {
-    props: {
-      latestAnime,
-      page,
-    },
-  };
+  try {
+    const response = await axios.get(`${apiUrl}/api/latest`, {
+      params: { page },
+    });
+    const latestAnime = response.data;
+
+    return {
+      props: {
+        latestAnime,
+        page,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching latest episodes:', error);
+    return {
+      props: {
+        latestAnime: [],
+        page,
+      },
+    };
+  }
 }
 
 export default HomePage;

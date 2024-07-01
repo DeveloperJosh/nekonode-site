@@ -5,13 +5,13 @@ import axios from 'axios';
 import Image from 'next/image';
 import ReactPlayer from 'react-player';
 
-const api = "https://api.nekonode.net";
+const api = "/api"; // Use the relative path for Next.js API
 const fetcher = url => axios.get(url).then(res => res.data);
 
 const AnimePage = () => {
   const router = useRouter();
   const { name } = router.query;
-  const { data: animeData, error } = useSWR(name ? `${api}/api/anime/${name}` : null, fetcher);
+  const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [episodeSources, setEpisodeSources] = useState({});
@@ -23,12 +23,11 @@ const AnimePage = () => {
     }
   }, [name]);
 
-
   const fetchAndSelectEpisode = async (episodeNumber) => {
     const episodeId = `${name}-episode-${episodeNumber}`;
     if (!episodeSources[episodeId]) {
       try {
-        const response = await axios.get(`${api}/api/watch/${episodeId}`);
+        const response = await axios.get(`${api}/watch/${episodeId}`);
         const sources = response.data;
         setEpisodeSources(prevState => ({ ...prevState, [episodeId]: sources }));
         const defaultQuality = sources.find(source => source.quality === selectedQuality) ? selectedQuality : sources[0].quality;
