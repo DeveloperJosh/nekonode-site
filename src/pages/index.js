@@ -65,6 +65,7 @@ const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
           </div>
           <Timetable />
         </div>
+        <br />
         <div className="w-full lg:w-1/3 lg:ml-4">
           <TopAnimeList topAnime={topAnime} />
         </div>

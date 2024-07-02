@@ -1,13 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
 
+const get_Number = (str) => {
+  return str.match(/\d+/g).map(Number)[0];
+}
+
 const AnimeList = ({ animes }) => {
   const displayedAnimes = animes.slice(0, 20); // Display up to 20 animes
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-5 gap-2"> {/* Adjusted grid columns and gap */}
       {displayedAnimes.map((anime) => (
-        <Link href={`/anime/${anime.encodedName}`} key={anime.name} className="block bg-gray-700 p-2 rounded-lg shadow hover:bg-gray-600 text-center"> {/* Adjusted styles */}
+        <Link href={`/anime/${anime.encodedName}?ep=${get_Number(anime.episode)}`} key={anime.name} className="block bg-gray-700 p-2 rounded-lg shadow hover:bg-gray-600 text-center"> {/* Adjusted styles */}
           <div className="relative pb-[140%] overflow-hidden rounded-lg mb-2"> {/* Adjusted padding-bottom for larger images */}
             <img
               src={anime.image}
