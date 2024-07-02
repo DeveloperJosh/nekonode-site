@@ -31,7 +31,6 @@ export default async function handler(req, res) {
       let encodedName = name.replace(/\s+/g, '-').toLowerCase();
       encodedName = encodedName.replace(/[^a-zA-Z0-9-]/g, '');
       encodedName = encodedName.replace(/-+/g, '-'); 
-      console.log(encodedName);
 
       let animeMatch = { name, encodedName, lang: is_dub, image, url: `${baseUrl}${url}` };
       animeMatches.push(animeMatch);
