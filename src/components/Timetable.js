@@ -99,7 +99,7 @@ const Timetable = () => {
                 <h3 className="text-lg font-bold">{entry.title}</h3>
                 <span className="text-sm text-gray-300">{entry.title_japanese}</span>
               </div>
-              <Link href={`/anime/${formatName(entry.title)}`} passHref className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+              <Link href={`/anime/${formatName(entry.title)}`} passHref className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-600">
                 Go to Anime
               </Link>
             </div>
