@@ -24,10 +24,10 @@ export default async function handler(req, res) {
       return res.json({ token: cachedToken });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '12h' });
 
-    // Cache the token
-    await setCache(cacheKey, token);
+    // Cache the token with an expiration time
+    await setCache(cacheKey, token, 12 * 60 * 60); // Set expiration to 12 hours (43200 seconds)
 
     res.json({ token });
   } catch (error) {

@@ -46,7 +46,7 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
-              <Link href="/profile" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
+              <Link href="/auth/profile" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
                 Profile
               </Link>
               <button
@@ -58,10 +58,10 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link href="/login" legacyBehavior>
+              <Link href="/auth/login" legacyBehavior>
                 <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Login</a>
               </Link>
-              <Link href="/register" legacyBehavior>
+              <Link href="/auth/register" legacyBehavior>
                 <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Register</a>
               </Link>
             </>
@@ -73,12 +73,12 @@ const Navbar = () => {
           <Link href="/" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
             Home
           </Link>
-          <Link href="https://github.com/DeveloperJosh/anime-cli" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
-            Get NekoNode CLI
+          <Link href="/news" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
+            News
           </Link>
           {isAuthenticated ? (
             <>
-              <Link href="/profile" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+              <Link href="/auth/profile" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
                 Profile
               </Link>
               <button
@@ -90,10 +90,10 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link href="/login" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+              <Link href="/auth/login" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
                 Login
               </Link>
-              <Link href="/register" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
+              <Link href="/auth/register" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
                 Register
               </Link>
             </>

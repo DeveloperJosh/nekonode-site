@@ -58,11 +58,14 @@ const Login = () => {
             >
               Login
             </button>
+            <Link href="/auth/request-reset" className="text-yellow-500 hover:text-yellow-600">
+              Forgot Password?
+            </Link>
           </div>
         </form>
         <p className="mt-6 text-center">
           Don't have an account?{' '}
-          <Link href="/register" className="text-yellow-500 hover:text-yellow-600">
+          <Link href="/auth/register" className="text-yellow-500 hover:text-yellow-600">
             Register
           </Link>
         </p>

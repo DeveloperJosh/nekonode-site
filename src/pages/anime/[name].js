@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import axios from 'axios';
 import Image from 'next/image';
-import ReactPlayer from 'react-player';
+import dynamic from 'next/dynamic';
 import CustomDropdown from '@/components/CustomDropdown';
+
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
 const api = "/api"; // Use the relative path for Next.js API
 const fetcher = url => axios.get(url).then(res => res.data);
@@ -22,48 +24,50 @@ const AnimePage = () => {
   useEffect(() => {
     if (name) {
       const episodeToPlay = ep ? parseInt(ep, 10) : 1; // Use 'ep' parameter or default to 1
-      fetchAndSelectEpisode(episodeToPlay);
+      fetchEpisodeDetails(episodeToPlay);
     }
   }, [name, ep, selectedServer]); // Add 'ep' to dependencies
 
-  const fetchAndSelectEpisode = async (episodeNumber) => {
+  const fetchEpisodeDetails = async (episodeNumber) => {
     const episodeId = `${name}-episode-${episodeNumber}`;
+    setSelectedEpisode({ episodeNumber, episodeId, sources: null });
+
     if (!episodeSources[episodeId] || episodeSources[episodeId].server !== selectedServer) { // Check for server
-        try {
-            const response = await axios.get(`${api}/watch/${episodeId}?server=${selectedServer}`); // Include server in API request
-            const sources = response.data;
-            setEpisodeSources(prevState => ({ ...prevState, [episodeId]: { sources, server: selectedServer } })); // Store server with sources
-            const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
-            setSelectedQuality(defaultQuality);
-            setSelectedEpisode({ episodeNumber, episodeId, sources });
-            let AnimeName = episodeId.split('-episode-')[0];
-            AnimeName = AnimeName.replace(/-/g, ' ').toUpperCase(); // Reassign correctly
-            addHistory(AnimeName, episodeId, episodeNumber);
-        } catch (error) {
-            console.error('Error fetching episode sources:', error);
-        }
+      try {
+        const response = await axios.get(`${api}/watch/${episodeId}?server=${selectedServer}`); // Include server in API request
+        const sources = response.data;
+        setEpisodeSources(prevState => ({ ...prevState, [episodeId]: { sources, server: selectedServer } })); // Store server with sources
+        const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
+        setSelectedQuality(defaultQuality);
+        setSelectedEpisode(prevState => ({ ...prevState, sources }));
+        let AnimeName = episodeId.split('-episode-')[0];
+        AnimeName = AnimeName.replace(/-/g, ' ').toUpperCase(); // Reassign correctly
+        addHistory(AnimeName, episodeId, episodeNumber);
+      } catch (error) {
+        console.error('Error fetching episode sources:', error);
+      }
     } else {
-        setSelectedEpisode({ episodeNumber, episodeId, sources: episodeSources[episodeId].sources });
-        if (!episodeSources[episodeId].sources.some(source => source.quality === selectedQuality)) {
-            setSelectedQuality(episodeSources[episodeId].sources[0].quality);
-        }
+      setSelectedEpisode(prevState => ({ ...prevState, sources: episodeSources[episodeId].sources }));
+      if (!episodeSources[episodeId].sources.some(source => source.quality === selectedQuality)) {
+        setSelectedQuality(episodeSources[episodeId].sources[0].quality);
+      }
     }
   };
 
   const addHistory = async (name, animeId, episodeNumber) => {
     try {
-        const response = await axios.post(`${api}/history/add`, {
-            name,
-            animeId,
-            episodeNumber
-        }, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure the token is correctly set
-            }
-        });
-        console.log('History added:', response.data.message);
+      const response = await axios.post(`${api}/history/add`, {
+        name,
+        animeId,
+        episodeNumber
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure the token is correctly set
+        }
+      });
+      console.log('History added:', response.data.message);
     } catch (error) {
-        console.error('Error adding history:', error.response?.data?.error || error.message);
+      console.error('Error adding history:', error.response?.data?.error || error.message);
     }
   };
 
@@ -72,7 +76,7 @@ const AnimePage = () => {
       pathname: `/anime/${name}`,
       query: { ep: episodeNumber }
     }, undefined, { shallow: true });
-    fetchAndSelectEpisode(episodeNumber);
+    fetchEpisodeDetails(episodeNumber);
   };
 
   const handlePageChange = (direction) => {
@@ -151,44 +155,52 @@ const AnimePage = () => {
   );
 };
 
-const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelectedServer, selectedServer }) => (
-  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h2 className="text-2xl font-bold text-yellow-500 mb-4 text-center">Episode {episode ? episode.episodeNumber : '1'}</h2>
-    <div className="player-wrapper">
-      {episode ? (
-        <ReactPlayer
-          url={episode.sources.find(source => source.quality === selectedQuality)?.source || episode.sources[0]?.source}
-          controls
-          width="100%"
-          height="100%"
-          className="react-player"
+const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelectedServer, selectedServer }) => {
+  const sources = episode?.sources ?? [];
+  const sourceUrl = useMemo(() => {
+    const source = sources.find(source => source.quality === selectedQuality);
+    return source ? source.source : sources[0]?.source;
+  }, [sources, selectedQuality]);
+
+  return (
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-yellow-500 mb-4 text-center">Episode {episode ? episode.episodeNumber : '1'}</h2>
+      <div className="player-wrapper">
+        {episode && episode.sources ? (
+          <ReactPlayer
+            url={sourceUrl}
+            controls
+            width="100%"
+            height="100%"
+            className="react-player"
+          />
+        ) : (
+          <div className="text-center text-gray-300">Loading sources...</div>
+        )}
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+        <button
+          onClick={() => setSelectedServer('gogocdn')}
+          className={`px-4 py-2 mx-2 rounded ${selectedServer === 'gogocdn' ? 'bg-yellow-500 text-gray-800' : 'bg-gray-700 text-gray-300'}`}
+        >
+          Neko
+        </button>
+        <button
+          onClick={() => setSelectedServer('streamwish')}
+          className={`px-4 py-2 mx-2 rounded ${selectedServer === 'streamwish' ? 'bg-yellow-500 text-gray-800' : 'bg-gray-700 text-gray-300'}`}
+        >
+          StreamWish
+        </button>
+        <CustomDropdown
+          label="Quality"
+          options={sources.map(source => source.quality)}
+          selectedOption={selectedQuality}
+          onSelect={setSelectedQuality}
         />
-      ) : (
-        <p className="text-center text-gray-300">Select an episode to play</p>
-      )}
+      </div>
     </div>
-    <div className="flex justify-center mt-4 space-x-4">
-      <button
-        onClick={() => setSelectedServer('gogocdn')}
-        className={`px-4 py-2 mx-2 rounded ${selectedServer === 'gogocdn' ? 'bg-yellow-500 text-gray-800' : 'bg-gray-700 text-gray-300'}`}
-      >
-        Neko
-      </button>
-      <button
-        onClick={() => setSelectedServer('streamwish')}
-        className={`px-4 py-2 mx-2 rounded ${selectedServer === 'streamwish' ? 'bg-yellow-500 text-gray-800' : 'bg-gray-700 text-gray-300'}`}
-      >
-        StreamWish
-      </button>
-      <CustomDropdown
-        label="Quality"
-        options={episode ? episode.sources.map((source) => source.quality) : []}
-        selectedOption={selectedQuality}
-        onSelect={setSelectedQuality}
-      />
-    </div>
-  </div>
-);
+  );
+};
 
 const AnimeDetails = ({ animeInfo }) => (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col md:flex-row items-center">

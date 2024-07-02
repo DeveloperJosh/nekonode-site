@@ -31,8 +31,15 @@ export default async function handler(req, res) {
         const episodeText = animeElement.find('.episode').text().trim();
         const episodeMatch = episodeText.match(/Episode (\d+)/);
         const episode = episodeMatch ? `Episode ${episodeMatch[1]}` : 'Unknown Episode';
+
+        // Encode name for URL
         let encodedName = name.replace(/\s+/g, '-').toLowerCase();
-        encodedName = encodedName.replace(/[^a-zA-Z0-9-]/g, '');
+        encodedName = encodedName.replace(/[^a-zA-Z0-9-']/g, ''); // Remove all non-alphanumeric characters except hyphens and apostrophes
+        encodedName = encodedName.replace(/--+/g, '-'); // Replace multiple hyphens with a single hyphen
+        encodedName = encodedName.replace(/'/g, ''); // Remove apostrophes
+        if (encodedName.endsWith('-')) {
+          encodedName = encodedName.slice(0, -1); // Remove trailing hyphen if it exists
+        }
 
         episodes.push({
           name,

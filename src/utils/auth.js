@@ -2,6 +2,7 @@
 
 export const logout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    localStorage.removeItem('profile');
+    window.location.href = '/auth/login';
   };
   

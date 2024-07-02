@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import withAuth from '../hoc/withAuth';
+import withAuth from '../../hoc/withAuth';
 import axios from 'axios';
-import { logout } from '../utils/auth';
+import { logout } from '../../utils/auth';
 import Link from 'next/link';
 
 const Profile = () => {
@@ -13,6 +13,11 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
+
+      //if (!token) {
+      //  logout();
+      //  return;
+      //}
 
       try {
         const profileResponse = await axios.get('/api/auth/profile', {
@@ -31,6 +36,7 @@ const Profile = () => {
         localStorage.setItem('history', JSON.stringify(historyResponse.data));
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Optionally, do not log out the user here; instead, show an error message or try to refresh the token
       }
     };
 
