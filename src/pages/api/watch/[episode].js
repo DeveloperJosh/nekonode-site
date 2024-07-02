@@ -1,11 +1,23 @@
 import GogoCDN from '../../../extractor/gogocdn';
-const gogoCDN = new GogoCDN();
+import StreamWish from '../../../extractor/streamwish';
+
+const servers = {
+  gogocdn: new GogoCDN(),
+  streamwish: new StreamWish(),
+  // Add other servers here
+};
 
 export default async function handler(req, res) {
-  const { episode } = req.query;
+  const { episode, server = 'gogocdn' } = req.query; // Default to 'gogocdn' if no server is specified
+
+  const selectedServer = servers[server.toLowerCase()];
+
+  if (!selectedServer) {
+    return res.status(400).json({ error: 'Invalid server specified' });
+  }
 
   try {
-    const episodeSourceData = await gogoCDN.getEpisodeSources(episode);
+    const episodeSourceData = await selectedServer.getEpisodeSources(episode);
     let episodeSources = [];
 
     episodeSourceData.forEach(sourceData => {

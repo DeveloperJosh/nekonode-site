@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { load } from 'cheerio';
 import dotenv from 'dotenv';
+import { getCache, setCache } from '../../../utils/redis'; // Adjust the path as needed
 dotenv.config();
 
 const baseUrl = process.env.BASE_URL;
@@ -9,8 +10,14 @@ export default async function handler(req, res) {
   const { animeName } = req.query;
   const encodedAnimeName = encodeURIComponent(animeName);
   const page = req.query.page || 1;
+  const cacheKey = `search-${encodedAnimeName}-page-${page}`;
 
   try {
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      return res.json({ animeMatches: cachedData });
+    }
+
     const searchResponse = await axios.get(`${baseUrl}/search.html?keyword=${encodedAnimeName}&page=${page}`);
     const $ = load(searchResponse.data);
     let animeMatches = [];
@@ -33,6 +40,7 @@ export default async function handler(req, res) {
     if (animeMatches.length === 0) {
       res.status(404).json({ error: 'No results found' });
     } else {
+      await setCache(cacheKey, animeMatches);
       res.json({ animeMatches });
     }
   } catch (error) {

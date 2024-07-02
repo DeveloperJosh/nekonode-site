@@ -1,10 +1,7 @@
-// src/pages/api/auth/profile.js
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/User';
 import auth from '../../../middleware/auth';
-import NodeCache from 'node-cache';
-
-const cache = new NodeCache({ stdTTL: 3600 }); // Cache TTL set to 1 hour (3600 seconds)
+import { getCache, setCache } from '../../../utils/redis';
 
 const handler = async (req, res) => {
   await dbConnect();
@@ -14,7 +11,7 @@ const handler = async (req, res) => {
   const cacheKey = `profile_${userId}`;
 
   // Check if the user profile is already cached
-  const cachedProfile = cache.get(cacheKey);
+  const cachedProfile = await getCache(cacheKey);
   if (cachedProfile) {
     return res.status(200).json(cachedProfile);
   }
@@ -28,7 +25,7 @@ const handler = async (req, res) => {
     const profileData = { username: user.username, email: user.email };
 
     // Cache the profile data
-    cache.set(cacheKey, profileData);
+    await setCache(cacheKey, profileData);
 
     res.status(200).json(profileData);
   } catch (error) {

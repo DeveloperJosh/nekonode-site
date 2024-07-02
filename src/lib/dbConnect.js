@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import '../models/Anime';
 import dotenv from 'dotenv';
 dotenv.config();
 

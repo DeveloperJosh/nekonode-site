@@ -1,9 +1,8 @@
-// Description: This file contains the code to extract video sources from GogoCDN server.
 import axios from 'axios';
 import { load } from 'cheerio';
 import CryptoJS from 'crypto-js';
 import dotenv from 'dotenv';
-import { getCache, setCache } from './cache.js';
+import { getCache, setCache } from '../utils/redis';
 import VideoExtractor from './VideoExtractor.js'; 
 
 dotenv.config();

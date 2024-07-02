@@ -23,8 +23,7 @@ const auth = handler => async (req, res) => {
     req.user = user;
     return handler(req, res);
   } catch (error) {
-    //console.log('Unauthorized access:', error);
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: error});
   }
 };
 

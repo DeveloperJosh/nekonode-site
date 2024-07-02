@@ -41,8 +41,8 @@ const Navbar = () => {
           <Link href="/" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
             Home
           </Link>
-          <Link href="https://github.com/DeveloperJosh/anime-cli" legacyBehavior>
-            <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Get NekoNode CLI</a>
+          <Link href="/news" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
+            News
           </Link>
           {isAuthenticated ? (
             <>

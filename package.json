@@ -10,31 +10,40 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.1.1",
     "@nestjs/cache-manager": "^2.2.2",
+    "@tailwindcss/typography": "^0.5.13",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "cache-manager": "^5.6.1",
     "cheerio": "^1.0.0-rc.12",
     "crypto-js": "^4.2.0",
+    "dns": "^0.2.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "gray-matter": "^4.0.3",
+    "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.4",
+    "net": "^1.0.2",
     "next": "14.2.4",
     "node-cache": "^5.1.2",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.2.1",
+    "react-markdown": "^9.0.1",
     "react-modal": "^3.16.1",
     "react-player": "^2.16.0",
+    "redis": "^4.6.14",
     "sharp": "^0.33.4",
     "swr": "^2.2.5",
-    "tailwind-scrollbar": "^3.1.0"
+    "tailwind-scrollbar": "^3.1.0",
+    "tls": "^0.0.1"
   },
   "devDependencies": {
     "eslint": "^8",
     "eslint-config-next": "14.2.4",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.4"
   }
 }

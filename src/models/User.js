@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   history: [
     {
+      name: { type: String, required: true },
       animeId: { type: String, required: true }, // Change to String
       episodeNumber: { type: Number, required: true },
       watchedAt: { type: Date, default: Date.now },
