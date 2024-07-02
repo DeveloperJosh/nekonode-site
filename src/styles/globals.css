@@ -97,22 +97,6 @@ body {
   text-overflow: ellipsis;
 }
 
-.player-wrapper {
-  position: relative;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
-  background: #000;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.react-player {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
 /* components/Timetable.css */
 .timetable-container {
   background-color: #1c1c1e;
@@ -179,4 +163,20 @@ body {
 
 .timetable-episode:hover {
   background-color: #5a5a5c;
+}
+
+.player-wrapper {
+  position: relative;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.react-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
