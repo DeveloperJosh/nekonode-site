@@ -66,7 +66,11 @@ export default async function handler(req, res) {
       }
     }
 
-    await setCache(cacheKey, allEpisodes);
+    // Check if cache needs to be updated
+    if (!cachedData || JSON.stringify(cachedData) !== JSON.stringify(allEpisodes)) {
+      await setCache(cacheKey, allEpisodes);
+    }
+
     res.status(200).json(allEpisodes);
   } catch (error) {
     console.error('Error in API handler:', error);

@@ -81,12 +81,20 @@ export async function getServerSideProps({ query }) {
   const latestCacheKey = `latestAnime-page-${initialPage}`;
   const topAnimeCacheKey = 'topAnime';
 
-  const cachedLatestAnime = await getCache(latestCacheKey);
-  const cachedTopAnime = await getCache(topAnimeCacheKey);
+  // Fetch from cache concurrently
+  const [cachedLatestAnime, cachedTopAnime, newsPosts] = await Promise.all([
+    getCache(latestCacheKey),
+    getCache(topAnimeCacheKey),
+    getNewsPosts(),
+  ]);
 
-  const newsPosts = getNewsPosts();
+  // Fetch the latest episodes from the API
+  const latestResponse = await axios.get(`${apiUrl}/api/latest`, {
+    params: { page: initialPage, limit: 12 },
+  });
+  const latestAnime = latestResponse.data;
 
-  if (cachedLatestAnime && cachedTopAnime) {
+  if (cachedLatestAnime && cachedTopAnime && JSON.stringify(cachedLatestAnime) === JSON.stringify(latestAnime)) {
     return {
       props: {
         initialLatestAnime: cachedLatestAnime,
@@ -97,22 +105,19 @@ export async function getServerSideProps({ query }) {
     };
   }
 
-  try {
-    const latestResponse = await axios.get(`${apiUrl}/api/latest`, {
-      params: { page: initialPage, limit: 12 },
-    });
-    const initialLatestAnime = latestResponse.data;
+  // If there are new episodes, update the cache
+  setCache(latestCacheKey, latestAnime);
 
+  try {
     const topAnimeResponse = await axios.get('https://api.jikan.moe/v4/top/anime?limit=10');
     const topAnime = topAnimeResponse.data.data;
 
     // Cache the responses
-    setCache(latestCacheKey, initialLatestAnime);
     setCache(topAnimeCacheKey, topAnime);
 
     return {
       props: {
-        initialLatestAnime,
+        initialLatestAnime: latestAnime,
         topAnime,
         initialPage,
         newsPosts,
@@ -122,13 +127,14 @@ export async function getServerSideProps({ query }) {
     console.error('Error fetching latest episodes or top anime:', error);
     return {
       props: {
-        initialLatestAnime: [],
-        topAnime: [],
+        initialLatestAnime: latestAnime,
+        topAnime: cachedTopAnime || [],
         initialPage,
         newsPosts,
       },
     };
   }
 }
+
 
 export default HomePage;

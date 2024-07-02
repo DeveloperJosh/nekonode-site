@@ -36,6 +36,7 @@ const Footer = () => {
       </div>
       <div className="text-center mt-4">
         <p className="text-gray-400">&copy; {new Date().getFullYear()} NekoNode. All rights reserved.</p>
+        <p className="text-gray-400 mt-2">This site does not store any files on its server. All contents are provided by non-affiliated third parties.</p>
       </div>
     </footer>
   );
