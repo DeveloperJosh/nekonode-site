@@ -180,8 +180,3 @@ body {
 .timetable-episode:hover {
   background-color: #5a5a5c;
 }
-
-/* Additional styling for markdown content */
-.markdown-body {
-  @apply prose prose-lg;
-}
