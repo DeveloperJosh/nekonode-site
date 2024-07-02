@@ -1,7 +1,16 @@
+// components/TopAnimeList.js
+
 import Link from 'next/link';
 
 const formatName = (anime) => {
   return anime.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '-').toLowerCase();
+};
+
+const truncateText = (text, maxLength) => {
+  if (text.length > maxLength) {
+    return text.slice(0, maxLength) + '...';
+  }
+  return text;
 };
 
 const TopAnimeList = ({ topAnime }) => {
@@ -10,12 +19,12 @@ const TopAnimeList = ({ topAnime }) => {
       <h2 className="text-2xl sm:text-3xl font-bold text-yellow-500 mb-6 text-center lg:text-left">Top 10 Anime</h2>
       <div className="grid grid-cols-1 gap-4">
         {topAnime.map((anime) => (
-          <div key={anime.mal_id} className="bg-gray-700 p-2 rounded-lg shadow-lg flex items-start space-x-2">
-            <img src={anime.images.jpg.image_url} alt={anime.title} className="w-16 h-24 rounded" />
-            <div className="flex flex-col">
-              <h3 className="text-xl font-bold">{anime.title}</h3>
-              <p className="text-sm">Score: {anime.score}</p>
-              <Link href={`/anime/${formatName(anime.title)}`} className="text-sm text-yellow-500 hover:text-yellow-700">
+          <div key={anime.id} className="bg-gray-700 p-2 rounded-lg shadow-lg flex items-start space-x-2">
+            <img src={anime.image} alt={anime.title} className="w-16 h-24 rounded" />
+            <div className="flex flex-col flex-grow">
+              <h3 className="text-xl font-bold">{truncateText(anime.title, 30)}</h3>
+              <p className="text-gray-300">Episode: {anime.episodeNumber}</p>
+              <Link href={`/anime/${formatName(anime.title)}`} passHref className="text-yellow-500 hover:text-yellow-400">
                 Go to Anime
               </Link>
             </div>
