@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { load } from 'cheerio';
 import dotenv from 'dotenv';
-import { getCache, setCache } from '../../../utils/redis'; // Adjust the path as needed
+import { getCache, setCache } from '../../../utils/redis'; 
 dotenv.config();
 
 const baseUrl = process.env.BASE_URL;
@@ -29,8 +29,8 @@ export default async function handler(req, res) {
       const image = animeElement.find('img').attr('src');
       const url = animeElement.find('a').attr('href');
       let encodedName = name.replace(/\s+/g, '-').toLowerCase();
-      encodedName = encodedName.replace(/[^a-zA-Z0-9-]/g, ''); // Remove characters that are not letters, numbers, or dashes
-      encodedName = encodedName.replace(/-+/g, '-'); // Replace multiple consecutive dashes with a single dash
+      encodedName = encodedName.replace(/[^a-zA-Z0-9-]/g, '');
+      encodedName = encodedName.replace(/-+/g, '-'); 
       console.log(encodedName);
 
       let animeMatch = { name, encodedName, lang: is_dub, image, url: `${baseUrl}${url}` };
