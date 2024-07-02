@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
+import CookieConsent from "react-cookie-consent";
 import Footer from '../components/Footer';
 
 function MyApp({ Component, pageProps }) {
@@ -30,6 +31,16 @@ function MyApp({ Component, pageProps }) {
         <div className="container mx-auto px-4 py-8 flex-grow">
 
           <Component {...pageProps} />
+          <CookieConsent
+            location="bottom"
+            buttonText="Yes I do!"
+            cookieName="myAwesomeCookieName2"
+             style={{ background: "#2B373B" }}
+             buttonStyle={{ color: "#4e503b", fontSize: "13px" }}
+              expires={150}
+          >
+          This website uses cookies to enhance the user experience.{" "}
+         </CookieConsent>
         </div>
         <Footer />
       </div>
