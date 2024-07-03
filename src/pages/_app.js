@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
 import CookieConsent from "react-cookie-consent";
 import Footer from '../components/Footer';
+import Heartbeat from '@/components/Heartbeat';
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -31,6 +32,7 @@ function MyApp({ Component, pageProps }) {
         <div className="container mx-auto px-4 py-8 flex-grow">
 
           <Component {...pageProps} />
+          <Heartbeat />
           <CookieConsent
             location="bottom"
             buttonText="Yes I do!"
