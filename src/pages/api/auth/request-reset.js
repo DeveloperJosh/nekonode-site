@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       to: email,
       from: process.env.EMAIL_USER,
       subject: 'Password Reset',
-      text: `You requested a password reset. Click the link to reset your password: http://localhost:4000/auth/reset-password?token=${token}\n This link will expire in 1 hour.`,
+      text: `You requested a password reset. Click the link to reset your password: https://nekonode.net/auth/reset-password?token=${token}\n This link will expire in 1 hour.`,
     };
 
     await transporter.sendMail(mailOptions);
