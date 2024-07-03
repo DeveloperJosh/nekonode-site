@@ -12,10 +12,10 @@ const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
 
   const handlePagination = async (newPage) => {
     try {
-      const response = await axios.get(`/api/latest`, {
+      const { data } = await axios.get('/api/latest', {
         params: { page: newPage, limit: 12 },
       });
-      setLatestAnime(response.data);
+      setLatestAnime(data);
       setPage(newPage);
     } catch (error) {
       console.error('Error fetching latest episodes:', error);
@@ -63,37 +63,35 @@ const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
 };
 
 export async function getServerSideProps({ query }) {
-  const initialPage = query.page ? parseInt(query.page, 10) : 1;
+  const initialPage = parseInt(query.page, 10) || 1;
 
-  // Fetch the latest episodes from the API
-  let latestAnime = [];
   try {
-    const latestResponse = await axios.get(`http://localhost:3000/api/latest`, {
-      params: { page: initialPage, limit: 12 },
-    });
-    latestAnime = latestResponse.data;
+    const [latestResponse, topAnimeResponse] = await Promise.all([
+      axios.get('http://localhost:3000/api/latest', {
+        params: { page: initialPage, limit: 12 },
+      }),
+      axios.get('http://localhost:3000/api/top10'),
+    ]);
+
+    return {
+      props: {
+        initialLatestAnime: latestResponse.data,
+        topAnime: topAnimeResponse.data.results,
+        initialPage,
+        newsPosts: getNewsPosts(),
+      },
+    };
   } catch (error) {
-    console.error('Error fetching latest episodes:', error);
+    console.error('Error fetching data:', error);
+    return {
+      props: {
+        initialLatestAnime: [],
+        topAnime: [],
+        initialPage,
+        newsPosts: getNewsPosts(),
+      },
+    };
   }
-
-  let topAnime = [];
-  try {
-    const topAnimeResponse = await axios.get(`http://localhost:3000/api/top10`);
-    topAnime = topAnimeResponse.data.results;
-  } catch (error) {
-    console.error('Error fetching top anime:', error);
-  }
-
-  const newsPosts = getNewsPosts();
-
-  return {
-    props: {
-      initialLatestAnime: latestAnime || [],
-      topAnime: topAnime || [],
-      initialPage,
-      newsPosts,
-    },
-  };
 }
 
 export default HomePage;
