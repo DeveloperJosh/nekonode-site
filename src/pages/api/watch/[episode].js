@@ -44,6 +44,9 @@ export default async function handler(req, res) {
     try {
       // Attempt to fetch sources by anime name as a fallback
       const animeName = episode.split('-episode-')[0];
+      if (!animeName) {
+        throw new Error('Invalid episode name');
+      }
       const cacheKey = `${server}-${animeName}`;
       const cachedData = await getCache(cacheKey);
 

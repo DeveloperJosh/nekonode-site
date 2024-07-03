@@ -8,7 +8,49 @@ This is the next-js website for the NekoNode API. The website is built using Nex
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en/) I recommend using the latest LTS version.
+- [Node.js](https://nodejs.org/en/): I recommend using the latest LTS version.
+- [Redis](https://redis.io/): for caching the API responses.
+- [MongoDB](https://www.mongodb.com/): for storing the user data.
+- [Hostinger](https://www.hostinger.com/): for the email service.
+- [CryptoJS](https://cryptojs.gitbook.io/docs/): for encrypting the user data, and for the extractors, You will have to put them in your .env file.
+- GogoCDN: Good luck with that one.
+
+## System Requirements
+
+- At least 2GB of RAM
+- At least 2 CPU Cores
+- At least 1GB of Storage
+
+## Installation
+
+1. Clone the repository
+2. Run `npm install` to install the dependencies
+3. Create a `.env` file in the root directory and add the following variables:
+
+```env
+JWT_SECRET=""
+MONGO_URL=""
+BASE_URL="https://gogoanime3.co"
+CRYPTO_KEY=""
+CRYPTO_SECOND_KEY=""
+CRYPTO_IV=""
+REDIS_URL=""
+EMAIL_USER=""
+EMAIL_PASS=""
+AJAX_URL=""
+HEARTBEAT="" # Not required
+```
+
+4. Run `npm run dev` to start the development server
+
+## Deployment
+
+1. Run `npm run build` to build the project
+2. Run `npm run start` to start the production server
+
+## Contributing
+
+If you would like to contribute to the project, please open a pull request on the [NekoNode-Site GitHub repository](https://github.com/DeveloperJosh/nekonode-site).
 
 ## Documentation?
 
