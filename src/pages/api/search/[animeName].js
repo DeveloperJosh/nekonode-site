@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { load } from 'cheerio';
 import dotenv from 'dotenv';
-import { getCache, setCache } from '../../../utils/redis'; 
 dotenv.config();
 
 const baseUrl = process.env.BASE_URL;
@@ -10,37 +9,46 @@ export default async function handler(req, res) {
   const { animeName } = req.query;
   const encodedAnimeName = encodeURIComponent(animeName);
   const page = req.query.page || 1;
-  const cacheKey = `search-${encodedAnimeName}-page-${page}`;
 
   try {
-    const cachedData = await getCache(cacheKey);
-    if (cachedData) {
-      return res.json({ animeMatches: cachedData });
-    }
 
-    const searchResponse = await axios.get(`${baseUrl}/search.html?keyword=${encodedAnimeName}&page=${page}`);
+    const searchResult = {
+      currentPage: page,
+      hasNextPage: false,
+      results: [],
+    };
+
+    const searchResponse = await axios.get(`${baseUrl}/filter.html?keyword=${encodedAnimeName}&page=${page}`);
     const $ = load(searchResponse.data);
-    let animeMatches = [];
 
-    $('.items .img').each((_, element) => {
-      const animeElement = $(element);
-      const name = animeElement.find('a').attr('title').trim();
-      const is_dub = name.includes('(Dub)') ? 'Dub' : 'Sub';
-      const image = animeElement.find('img').attr('src');
-      const url = animeElement.find('a').attr('href');
-      let encodedName = name.replace(/\s+/g, '-').toLowerCase();
-      encodedName = encodedName.replace(/[^a-zA-Z0-9-]/g, '');
-      encodedName = encodedName.replace(/-+/g, '-'); 
+    searchResult.hasNextPage = $('div.anime_name.new_series > div > div > ul > li.selected').next().length > 0;
 
-      let animeMatch = { name, encodedName, lang: is_dub, image, url: `${baseUrl}${url}` };
-      animeMatches.push(animeMatch);
+    $('div.last_episodes > ul > li').each((_, el) => {
+      const animeElement = $(el);
+      const title = animeElement.find('p.name > a').text();
+      const url = `${baseUrl}/${animeElement.find('p.name > a').attr('href')}`;
+      const image = animeElement.find('div > a > img').attr('src');
+      const releaseDate = animeElement.find('p.released').text().trim();
+      const subOrDub = title.toLowerCase().includes('dub') ? 'Dub' : 'Sub';
+
+      const id = animeElement.find('p.name > a').attr('href')?.split('/')[2];
+
+      searchResult.results.push({
+        id,
+        title,
+        url,
+        image,
+        releaseDate,
+        subOrDub,
+      });
     });
 
-    if (animeMatches.length === 0) {
+    if (searchResult.results.length === 0) {
       res.status(404).json({ error: 'No results found' });
     } else {
-      await setCache(cacheKey, animeMatches);
-      res.json({ animeMatches });
+     // await setCache(cacheKey, searchResult);
+      //console.log({ searchResult });
+      res.json({ searchResult });
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve anime' });

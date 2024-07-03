@@ -9,6 +9,7 @@ const SearchResults = () => {
   const { query, page = 1 } = router.query;
   const [results, setResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(parseInt(page));
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
@@ -18,7 +19,9 @@ const SearchResults = () => {
       setHasError(false);
       try {
         const response = await axios.get(`/api/search/${query}?page=${currentPage}`);
-        setResults(response.data.animeMatches);
+        const data = response.data.searchResult;
+        setResults(data.results);
+        setHasNextPage(data.hasNextPage);
       } catch (error) {
         console.error('Error fetching search results:', error);
         setResults([]);
@@ -30,7 +33,7 @@ const SearchResults = () => {
   }, [query, currentPage]);
 
   const handleNextPage = () => {
-    if (!hasError) {
+    if (!hasError && hasNextPage) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
       router.push(`/search?query=${query}&page=${nextPage}`);
@@ -56,18 +59,18 @@ const SearchResults = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {results.length > 0 ? (
             results.map((anime) => (
-              <Link href={`/anime/${encodeURIComponent(anime.encodedName)}`} key={anime.encodedName} legacyBehavior>
+              <Link href={`/anime/${encodeURIComponent(anime.id)}`} key={anime.id} legacyBehavior>
                 <a className="block bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition">
                   <div className="relative w-full pb-[150%] mb-4">
                     <Image
                       src={anime.image}
-                      alt={anime.name}
+                      alt={anime.title}
                       layout="fill"
                       objectFit="cover"
                       className="rounded-lg"
                     />
                   </div>
-                  <h2 className="text-xl font-bold text-yellow-500 mb-2">{anime.name}</h2>
+                  <h2 className="text-xl font-bold text-yellow-500 mb-2">{anime.title}</h2>
                 </a>
               </Link>
             ))
@@ -86,8 +89,8 @@ const SearchResults = () => {
           <span className="text-lg font-bold text-gray-300 mx-4">Page {currentPage}</span>
           <button
             onClick={handleNextPage}
-            disabled={hasError}
-            className={`bg-yellow-500 hover:bg-yellow-600 text-gray-800 px-4 py-2 rounded-lg shadow transition ${hasError ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={hasError || !hasNextPage}
+            className={`bg-yellow-500 hover:bg-yellow-600 text-gray-800 px-4 py-2 rounded-lg shadow transition ${hasError || !hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Next Page
           </button>

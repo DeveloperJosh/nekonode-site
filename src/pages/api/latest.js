@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const baseUrl = process.env.BASE_URL;
-const ajaxUrl = "https://ajax.gogocdn.net/ajax"; 
+const ajaxUrl = process.env.AJAX_URL;
 
 export default async function handler(req, res) {
   try {

@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const page = req.query.page || 1;
 
   try {
-    const ajaxUrl = 'https://ajax.gogocdn.net/ajax';
+    const ajaxUrl =  process.env.AJAX_URL
     const baseUrl =  process.env.BASE_URL
 
     const response = await axios.get(`${ajaxUrl}/page-recent-release-ongoing.html?page=${page}`);
