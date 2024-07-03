@@ -37,8 +37,34 @@ export default async function handler(req, res) {
 
     await setCache(cacheKey, episodeSources);
 
-    res.json(episodeSources);
+    return res.json(episodeSources);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve episode sources' });
+    console.error(`Error fetching episode ${episode} from ${server}:`, error);
+    
+    try {
+      // Attempt to fetch sources by anime name as a fallback
+      const animeName = episode.split('-episode-')[0];
+      const cacheKey = `${server}-${animeName}`;
+      const cachedData = await getCache(cacheKey);
+
+      if (cachedData) {
+        return res.json(cachedData);
+      }
+
+      const animeSourceData = await selectedServer.getEpisodeSources(animeName);
+      let animeSources = [];
+
+      animeSourceData.forEach(sourceData => {
+        let animeSource = { source: sourceData.url, quality: sourceData.quality };
+        animeSources.push(animeSource);
+      });
+
+      await setCache(cacheKey, animeSources);
+
+      return res.json(animeSources);
+    } catch (fallbackError) {
+      console.error(`Error fetching anime ${animeName} from ${server}:`, fallbackError);
+      return res.status(500).json({ error: `Failed to fetch sources for both episode ${episode} and anime ${animeName}.` });
+    }
   }
 }

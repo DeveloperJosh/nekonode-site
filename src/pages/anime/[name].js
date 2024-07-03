@@ -21,7 +21,11 @@ const AnimePage = () => {
   useEffect(() => {
     if (name) {
       const episodeToPlay = ep ? parseInt(ep, 10) : 1; // Use 'ep' parameter or default to 1
-      fetchEpisodeDetails(episodeToPlay);
+      if (episodeToPlay === 0) {
+        playByAnimeName(name); // Play the anime by its name if episode is 0
+      } else {
+        fetchEpisodeDetails(episodeToPlay);
+      }
     }
   }, [name, ep, selectedServer]); 
 
@@ -48,6 +52,20 @@ const AnimePage = () => {
       if (!episodeSources[episodeId].sources.some(source => source.quality === selectedQuality)) {
         setSelectedQuality(episodeSources[episodeId].sources[0].quality);
       }
+    }
+  };
+
+  const playByAnimeName = async (animeName) => {
+    try {
+      const response = await axios.get(`${api}/watch/${animeName}`);
+      const sources = response.data;
+      setEpisodeSources(prevState => ({ ...prevState, [animeName]: { sources, server: selectedServer } }));
+      const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
+      setSelectedQuality(defaultQuality);
+      setSelectedEpisode({ episodeNumber: 0, episodeId: animeName, sources });
+      addHistory(animeName, animeName, 0);
+    } catch (error) {
+      console.error('Error fetching anime sources:', error);
     }
   };
 
@@ -92,6 +110,35 @@ const AnimePage = () => {
   const totalPages = Math.ceil(episodes.length / episodesPerPage);
   const currentEpisodes = episodes.slice((currentPage - 1) * episodesPerPage, currentPage * episodesPerPage);
 
+  // Check if episode 0 exists
+  const hasEpisode0 = episodes.some(episode => episode.episodeNumber === 0);
+  const episodeButtons = [];
+  
+  // Add episode 0 button if it exists
+  if (hasEpisode0) {
+    episodeButtons.push(
+      <li key={0} className="mb-2">
+        <button
+          className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === 0 ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
+          onClick={() => handleEpisodeSelect(0)}
+        >
+          {`EP 0`}
+        </button>
+      </li>
+    );
+  }
+
+  episodeButtons.push(...currentEpisodes.map(episode => (
+    <li key={episode.episodeNumber} className="mb-2">
+      <button
+        className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === episode.episodeNumber ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
+        onClick={() => handleEpisodeSelect(episode.episodeNumber)}
+      >
+        {`EP ${episode.episodeNumber}`}
+      </button>
+    </li>
+  )));
+
   return (
     <div className="bg-gray-900 min-h-screen text-gray-200">
       <div className="container mx-auto px-4 py-8">
@@ -104,24 +151,11 @@ const AnimePage = () => {
                   className="w-full bg-gray-700 text-yellow-500 p-2 rounded"
                   onChange={(e) => handleEpisodeSelect(e.target.value)}
                 >
-                  {currentEpisodes.map(episode => (
-                    <option key={episode.episodeNumber} value={episode.episodeNumber}>
-                      {`EP ${episode.episodeNumber}`}
-                    </option>
-                  ))}
+                  {episodeButtons}
                 </select>
               </div>
               <ul className="hidden md:block">
-                {currentEpisodes.map(episode => (
-                  <li key={episode.episodeNumber} className="mb-2">
-                    <button
-                      className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === episode.episodeNumber ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
-                      onClick={() => handleEpisodeSelect(episode.episodeNumber)}
-                    >
-                      {`EP ${episode.episodeNumber}`}
-                    </button>
-                  </li>
-                ))}
+                {episodeButtons}
               </ul>
             </div>
             {episodes.length > episodesPerPage && (
