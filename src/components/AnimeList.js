@@ -1,17 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
 
-const get_Number = (str) => {
-  return str.match(/\d+/g).map(Number)[0];
-}
-
 const AnimeList = ({ animes }) => {
-  const displayedAnimes = animes.slice(0, 20); // Display up to 20 animes
+  const displayedAnimes = animes.slice(0, 20); 
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-5 gap-2"> {/* Adjusted grid columns and gap */}
       {displayedAnimes.map((anime) => (
-        <Link href={`/anime/${anime.encodedName}?ep=${get_Number(anime.episode)}`} key={anime.name} className="block bg-gray-700 p-2 rounded-lg shadow hover:bg-gray-600 text-center"> {/* Adjusted styles */}
+        <Link href={`/anime/${anime.id}?ep=${anime.episodeNumber}`} key={anime.title} className="block bg-gray-700 p-2 rounded-lg shadow hover:bg-gray-600 text-center"> {/* Adjusted styles */}
           <div className="relative pb-[140%] overflow-hidden rounded-lg mb-2"> {/* Adjusted padding-bottom for larger images */}
             <img
               src={anime.image}
@@ -19,10 +15,10 @@ const AnimeList = ({ animes }) => {
               className="absolute inset-0 w-full h-full object-cover rounded-lg"
             />
           </div>
-          <h3 className="text-sm font-bold text-gray-300 truncate">{anime.name}</h3> {/* Adjusted text size */}
+          <h3 className="text-sm font-bold text-gray-300 truncate">{anime.title}</h3> 
           <p className="text-xs text-gray-400 mt-1 truncate">
-            {anime.episode} | {anime.lang}
-          </p> {/* Adjusted text size */}
+            Episode: {anime.episodeNumber} | {anime.title.includes('Dub') ? ' Dub' : ' Sub'}
+          </p>
         </Link>
       ))}
     </div>

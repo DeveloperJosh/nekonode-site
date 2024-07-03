@@ -1,5 +1,6 @@
 import GogoCDN from '../../../extractor/gogocdn';
 import StreamWish from '../../../extractor/streamwish';
+import { getCache, setCache } from '@/utils/redis';
 
 const servers = {
   gogocdn: new GogoCDN(),
@@ -17,6 +18,15 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Check if the episode sources are cached
+    const cacheKey = `${server}-${episode}`;
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    // If not cached, fetch the episode sources
     const episodeSourceData = await selectedServer.getEpisodeSources(episode);
     let episodeSources = [];
 
@@ -24,6 +34,8 @@ export default async function handler(req, res) {
       let episodeSource = { source: sourceData.url, quality: sourceData.quality };
       episodeSources.push(episodeSource);
     });
+
+    await setCache(cacheKey, episodeSources);
 
     res.json(episodeSources);
   } catch (error) {

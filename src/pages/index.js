@@ -4,7 +4,6 @@ import AnimeList from '../components/AnimeList';
 import Timetable from '../components/Timetable';
 import TopAnimeList from '../components/TopAnimeList';
 import axios from 'axios';
-import { getCache, setCache } from '../utils/redis';
 import { getNewsPosts } from '../lib/news';
 
 const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
@@ -12,22 +11,12 @@ const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
   const [page, setPage] = useState(initialPage);
 
   const handlePagination = async (newPage) => {
-    const cacheKey = `latestAnime-page-${newPage}`;
-    const cachedData = await getCache(cacheKey);
-
-    if (cachedData) {
-      setLatestAnime(cachedData);
-      setPage(newPage);
-      return;
-    }
-
     try {
       const response = await axios.get(`/api/latest`, {
         params: { page: newPage, limit: 12 },
       });
       setLatestAnime(response.data);
       setPage(newPage);
-      setCache(cacheKey, response.data);
     } catch (error) {
       console.error('Error fetching latest episodes:', error);
     }
@@ -76,42 +65,26 @@ const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
 export async function getServerSideProps({ query }) {
   const initialPage = query.page ? parseInt(query.page, 10) : 1;
 
-  const latestCacheKey = `latestAnime-page-${initialPage}`;
-  const topAnimeCacheKey = 'topAnime';
-
-  // Fetch from cache concurrently
-  const [cachedLatestAnime, cachedTopAnime, newsPosts] = await Promise.all([
-    getCache(latestCacheKey),
-    getCache(topAnimeCacheKey),
-    getNewsPosts(),
-  ]);
-
   // Fetch the latest episodes from the API
-  let latestAnime = cachedLatestAnime;
-
-  if (!cachedLatestAnime) {
-    try {
-      const latestResponse = await axios.get(`http://localhost:3000/api/latest`, {
-        params: { page: initialPage, limit: 12 },
-      });
-      latestAnime = latestResponse.data;
-      setCache(latestCacheKey, latestAnime);
-    } catch (error) {
-      console.error('Error fetching latest episodes:', error);
-    }
+  let latestAnime = [];
+  try {
+    const latestResponse = await axios.get(`http://localhost:3000/api/latest`, {
+      params: { page: initialPage, limit: 12 },
+    });
+    latestAnime = latestResponse.data;
+  } catch (error) {
+    console.error('Error fetching latest episodes:', error);
   }
 
-  let topAnime = cachedTopAnime;
-
-  if (!cachedTopAnime) {
-    try {
-      const topAnimeResponse = await axios.get(`http://localhost:3000/api/top10`);
-      topAnime = topAnimeResponse.data.results;
-      setCache(topAnimeCacheKey, topAnime);
-    } catch (error) {
-      console.error('Error fetching top anime:', error);
-    }
+  let topAnime = [];
+  try {
+    const topAnimeResponse = await axios.get(`http://localhost:3000/api/top10`);
+    topAnime = topAnimeResponse.data.results;
+  } catch (error) {
+    console.error('Error fetching top anime:', error);
   }
+
+  const newsPosts = getNewsPosts();
 
   return {
     props: {

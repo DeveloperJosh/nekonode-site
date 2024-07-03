@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     $('div.added_series_body.popular > ul > li').each((i, el) => {
       const id = $(el).find('a:nth-child(1)').attr('href')?.split('/')[2] || '';
-      const title = $(el).find('a:nth-child(1)').attr('title') || '';
+      let title = $(el).find('a:nth-child(1)').attr('title') || '';
       const image = $(el).find('a:nth-child(1) > div').attr('style')?.match('(https?://.*.(?:png|jpg))')[0] || '';
       const url = `${baseUrl}${$(el).find('a:nth-child(1)').attr('href')}`;
       const genres = $(el)
@@ -30,6 +30,11 @@ export default async function handler(req, res) {
         .get();
       const episodeId = $(el).find('p:nth-of-type(2) > a').attr('title') || '';
       const episodeNumber = parseFloat($(el).find('p:nth-of-type(2) > a').text().replace('Episode ', ''));
+
+      // if title is empty, then make ID the title by making it look like a title
+      if (!title) {
+        title = id.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      }
 
       topAiring.push({
         id,
