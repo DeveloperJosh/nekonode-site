@@ -25,7 +25,7 @@ const TopAnimeList = ({ topAnime }) => {
               <h3 className="text-xl font-bold">{truncateText(anime.title, 30)}</h3>
               <p className="text-gray-300">Language: {anime.title.includes('Dub') ? ' Dub' : ' Sub'}</p>
               <p className="text-gray-300">Episode: {anime.episodeNumber}</p>
-              <Link href={`/anime/${formatName(anime.title)}`} passHref className="text-yellow-500 hover:text-yellow-400">
+              <Link href={`/anime/${formatName(anime.id)}`} passHref className="text-yellow-500 hover:text-yellow-400">
                 Go to Anime
               </Link>
             </div>
