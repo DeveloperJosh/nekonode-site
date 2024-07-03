@@ -1,5 +1,3 @@
-// pages/index.js
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 import AnimeList from '../components/AnimeList';
@@ -8,7 +6,6 @@ import TopAnimeList from '../components/TopAnimeList';
 import axios from 'axios';
 import { getCache, setCache } from '../utils/redis';
 import { getNewsPosts } from '../lib/news';
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
   const [latestAnime, setLatestAnime] = useState(initialLatestAnime);
@@ -25,7 +22,7 @@ const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
     }
 
     try {
-      const response = await axios.get(`${apiUrl}/api/latest`, {
+      const response = await axios.get(`/api/latest`, {
         params: { page: newPage, limit: 12 },
       });
       setLatestAnime(response.data);
@@ -78,7 +75,6 @@ const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
 
 export async function getServerSideProps({ query }) {
   const initialPage = query.page ? parseInt(query.page, 10) : 1;
- // const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
   const latestCacheKey = `latestAnime-page-${initialPage}`;
   const topAnimeCacheKey = 'topAnime';
@@ -91,51 +87,40 @@ export async function getServerSideProps({ query }) {
   ]);
 
   // Fetch the latest episodes from the API
-  const latestResponse = await axios.get(`${apiUrl}/api/latest`, {
-    params: { page: initialPage, limit: 12 },
-  });
-  const latestAnime = latestResponse.data;
+  let latestAnime = cachedLatestAnime;
 
-  if (cachedLatestAnime && cachedTopAnime && JSON.stringify(cachedLatestAnime) === JSON.stringify(latestAnime)) {
-    return {
-      props: {
-        initialLatestAnime: cachedLatestAnime,
-        topAnime: cachedTopAnime,
-        initialPage,
-        newsPosts,
-      },
-    };
+  if (!cachedLatestAnime) {
+    try {
+      const latestResponse = await axios.get(`http://localhost:3000/api/latest`, {
+        params: { page: initialPage, limit: 12 },
+      });
+      latestAnime = latestResponse.data;
+      setCache(latestCacheKey, latestAnime);
+    } catch (error) {
+      console.error('Error fetching latest episodes:', error);
+    }
   }
 
-  // If there are new episodes, update the cache
-  setCache(latestCacheKey, latestAnime);
+  let topAnime = cachedTopAnime;
 
-  try {
-    const topAnimeResponse = await axios.get(`${apiUrl}/api/top10`);
-    const topAnime = topAnimeResponse.data.results;
-
-    // Cache the responses
-    setCache(topAnimeCacheKey, topAnime);
-
-    return {
-      props: {
-        initialLatestAnime: latestAnime,
-        topAnime,
-        initialPage,
-        newsPosts,
-      },
-    };
-  } catch (error) {
-    console.error('Error fetching latest episodes or top anime:', error);
-    return {
-      props: {
-        initialLatestAnime: latestAnime,
-        topAnime: cachedTopAnime || [],
-        initialPage,
-        newsPosts,
-      },
-    };
+  if (!cachedTopAnime) {
+    try {
+      const topAnimeResponse = await axios.get(`http://localhost:3000/api/top10`);
+      topAnime = topAnimeResponse.data.results;
+      setCache(topAnimeCacheKey, topAnime);
+    } catch (error) {
+      console.error('Error fetching top anime:', error);
+    }
   }
+
+  return {
+    props: {
+      initialLatestAnime: latestAnime || [],
+      topAnime: topAnime || [],
+      initialPage,
+      newsPosts,
+    },
+  };
 }
 
 export default HomePage;
