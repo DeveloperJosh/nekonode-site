@@ -1,55 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import useSWR from 'swr';
 import axios from 'axios';
 
-const Comments = ({ animeId }) => {
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const fetcher = url => axios.get(url).then(res => res.data);
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const response = await axios.get(`/api/comments/${animeId}`);
-        setComments(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching comments');
-        setLoading(false);
-      }
-    };
+const Comments = ({ animeId, episodeNumber }) => {
+  const { data: comments, error } = useSWR(() => (animeId && episodeNumber !== null) ? `/api/comments?animeId=${animeId}&episodeNumber=${episodeNumber}` : null, fetcher);
 
-    fetchComments();
-  }, [animeId]);
-
-  if (loading) {
-    return <p>Loading comments...</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
-  }
+  if (!comments && !error) return <div>Loading comments...</div>;
+  if (error) return <div>Failed to load comments</div>;
 
   return (
-  <div className="mt-8">
-    <h2 className="text-2xl font-bold text-yellow-500 mb-4">Comments</h2>
-     <div className="mt-8 p-4 bg-gray-800 rounded-lg">
-       <div className="max-h-96 pr-2 overflow-y-auto space-y-4 rounded-lg">
-         {comments.length > 0 ? (
-           comments.map((comment) => (
-             <div key={comment._id} className="bg-gray-900 p-4 rounded-lg shadow-lg flex items-center space-x-4 w-full">
-               <img src={comment.user.image} alt={comment.user.name} className="w-10 h-10 rounded-full" />
-               <div className="flex-1">
-                 <p className="text-yellow-500 font-bold">{comment.user.name}</p>
-                 <p className="text-gray-300">{comment.text}</p>
-                 <p className="text-gray-500 text-sm">{new Date(comment.createdAt).toLocaleString()}</p>
-               </div>
-             </div>
-          ))
-        ) : (
-          <p className="text-gray-300">No comments available.</p>
-        )}
-       </div>
-     </div>
+    <div className="bg-gray-800 p-4 rounded-lg shadow-lg mt-4">
+      <h3 className="text-2xl font-bold text-yellow-500 mb-4">Comments</h3>
+      {comments.length === 0 ? (
+        <div>No comments yet.</div>
+      ) : (
+        <ul>
+          {comments.map(comment => (
+            <li key={comment._id} className="mb-4">
+              <div className="flex items-center mb-2">
+                <img src={comment.user.image} alt={comment.user.name} className="w-10 h-10 rounded-full mr-2" />
+                <span className="font-semibold">{comment.user.name}</span>
+              </div>
+              <p>{comment.text}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

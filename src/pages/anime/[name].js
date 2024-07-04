@@ -170,7 +170,7 @@ const AnimePage = () => {
             />
             <br />
             <AnimeDetails animeInfo={animeInfo} />
-            <Comments animeId={name} />
+            <Comments animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />
             {status === 'authenticated' && <CommentForm animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />}
           </main>
         </div>
