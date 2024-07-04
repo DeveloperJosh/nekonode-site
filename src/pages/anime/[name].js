@@ -161,13 +161,15 @@ const AnimePage = () => {
             )}
           </aside>
           <main className="w-full md:w-3/4 md:ml-4">
-            <EpisodePlayer
-              episode={selectedEpisode}
-              selectedQuality={selectedQuality}
-              setSelectedQuality={setSelectedQuality}
-              setSelectedServer={setSelectedServer}
-              selectedServer={selectedServer}
-            />
+            <div style={{minHeight: '300px'}}>
+              <EpisodePlayer
+                episode={selectedEpisode}
+                selectedQuality={selectedQuality}
+                setSelectedQuality={setSelectedQuality}
+                setSelectedServer={setSelectedServer}
+                selectedServer={selectedServer}
+              />
+            </div>
             <br />
             <AnimeDetails animeInfo={animeInfo} />
             <Comments animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />

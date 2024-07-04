@@ -24,8 +24,15 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelect
             className="react-player"
           />
         ) : (
-          <div className="text-center text-gray-300">Loading sources...</div>
+          <div className="text-center text-gray-300">Loading...</div>
         )}
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+        { /* Bold message */}
+        <p className="font-bold">Select Server:</p>
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+         <p className="font-bold text-sm">If one server isn't working, Try the next</p>
       </div>
       <div className="flex justify-center mt-4 space-x-4">
         <button
