@@ -74,7 +74,7 @@ const Navbar = () => {
                   onClick={() => signIn('discord')}
                   className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600"
                 >
-                  Login
+                  Login with Discord
                 </button>
               </>
             )}
@@ -107,7 +107,7 @@ const Navbar = () => {
                 onClick={() => signIn('discord')}
                 className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600"
               >
-                Login
+                Login with Discord
               </button>
             </>
           )}
