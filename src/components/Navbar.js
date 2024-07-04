@@ -76,9 +76,6 @@ const Navbar = () => {
                 >
                   Login
                 </button>
-                <Link href="/auth/register" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
-                  Register
-                </Link>
               </>
             )}
           </div>
@@ -112,9 +109,6 @@ const Navbar = () => {
               >
                 Login
               </button>
-              <Link href="/auth/register" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
-                Register
-              </Link>
             </>
           )}
         </div>

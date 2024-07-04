@@ -44,7 +44,7 @@ export const authOptions = {
   pages: {
     signIn: '/auth/signin',  // Custom sign-in page URL
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.JWT_SECRET,
   debug: process.env.NODE_ENV === 'development',
 };
 
