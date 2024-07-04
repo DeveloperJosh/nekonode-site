@@ -6,6 +6,7 @@ import SearchBar from '../components/SearchBar';
 import CookieConsent from "react-cookie-consent";
 import Footer from '../components/Footer';
 import Heartbeat from '@/components/Heartbeat';
+import { SessionProvider } from "next-auth/react";
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -19,6 +20,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <>
+    <SessionProvider session={pageProps.session}>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#01a0e9" />
@@ -30,7 +32,6 @@ function MyApp({ Component, pageProps }) {
       <div className="bg-gray-900 min-h-screen text-gray-200 flex flex-col">
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex-grow">
-
           <Component {...pageProps} />
           <Heartbeat />
           <CookieConsent
@@ -46,6 +47,7 @@ function MyApp({ Component, pageProps }) {
         </div>
         <Footer />
       </div>
+      </SessionProvider>
     </>
   );
 }

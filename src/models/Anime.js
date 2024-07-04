@@ -1,5 +1,5 @@
-// this is going add likes, dislikes, and comments to the anime model
 import mongoose from 'mongoose';
+// to be used in newer versions
 
 const animeSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -12,7 +12,7 @@ const animeSchema = new mongoose.Schema({
   dislikes: { type: Number, default: 0 },
   comments: [
     {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      user: { type: String, ref: 'User', required: true },
       comment: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
     }

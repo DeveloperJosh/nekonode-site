@@ -1,19 +1,11 @@
 import mongoose from 'mongoose';
 
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
+const UserSchema = new mongoose.Schema({
+  _id: { type: String, required: true },  // Ensure _id is a String
+  userId: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  resetToken: String,
-  resetTokenExpiration: Date,
-  history: [
-    {
-      name: { type: String, required: true },
-      animeId: { type: String, required: true }, // Change to String
-      episodeNumber: { type: Number, required: true },
-      watchedAt: { type: Date, default: Date.now },
-    }
-  ],
+  image: { type: String },
 });
 
-export default mongoose.models.User || mongoose.model('User', userSchema);
+export default mongoose.models.User || mongoose.model('User', UserSchema);

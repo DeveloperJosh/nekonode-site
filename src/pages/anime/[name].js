@@ -4,6 +4,9 @@ import useSWR from 'swr';
 import axios from 'axios';
 import Image from 'next/image';
 import EpisodePlayer from '@/components/EpisodePlayer';
+import { useSession } from 'next-auth/react';
+import Comments from '@/components/Comments';
+import CommentForm from '@/components/CommentForm';
 
 const api = "/api"; // Use the relative path for Next.js API
 const fetcher = url => axios.get(url).then(res => res.data);
@@ -12,6 +15,7 @@ const AnimePage = () => {
   const router = useRouter();
   const { name, ep } = router.query; // Extract the 'ep' parameter from the query
   const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher);
+  const { data: session, status } = useSession(); // Fetch the session
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [episodeSources, setEpisodeSources] = useState({});
@@ -43,7 +47,6 @@ const AnimePage = () => {
         setSelectedEpisode(prevState => ({ ...prevState, sources }));
         let AnimeName = episodeId.split('-episode-')[0];
         AnimeName = AnimeName.replace(/-/g, ' ').toUpperCase(); 
-        addHistory(AnimeName, episodeId, episodeNumber);
       } catch (error) {
         console.error('Error fetching episode sources:', error);
       }
@@ -63,35 +66,18 @@ const AnimePage = () => {
       const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
       setSelectedQuality(defaultQuality);
       setSelectedEpisode({ episodeNumber: 0, episodeId: animeName, sources });
-      addHistory(animeName, animeName, 0);
     } catch (error) {
       console.error('Error fetching anime sources:', error);
     }
   };
 
-  const addHistory = async (name, animeId, episodeNumber) => {
-    try {
-      const response = await axios.post(`${api}/history/add`, {
-        name,
-        animeId,
-        episodeNumber
-      }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure the token is correctly set
-        }
-      });
-      console.log('History added:', response.data.message);
-    } catch (error) {
-      console.error('Error adding history:', error.response?.data?.error || error.message);
-    }
-  };
-
   const handleEpisodeSelect = episodeNumber => {
+    const episodeNum = parseInt(episodeNumber, 10); // Convert to number
     router.push({
       pathname: `/anime/${name}`,
-      query: { ep: episodeNumber }
+      query: { ep: episodeNum }
     }, undefined, { shallow: true });
-    fetchEpisodeDetails(episodeNumber);
+    fetchEpisodeDetails(episodeNum);
   };
 
   const handlePageChange = (direction) => {
@@ -151,7 +137,12 @@ const AnimePage = () => {
                   className="w-full bg-gray-700 text-yellow-500 p-2 rounded"
                   onChange={(e) => handleEpisodeSelect(e.target.value)}
                 >
-                  {episodeButtons}
+                  {currentEpisodes.map(episode => (
+                    <option key={episode.episodeNumber} value={episode.episodeNumber}>
+                      {`EP ${episode.episodeNumber}`}
+                    </option>
+                  ))}
+                  {hasEpisode0 && <option value="0">EP 0</option>}
                 </select>
               </div>
               <ul className="hidden md:block">
@@ -179,6 +170,8 @@ const AnimePage = () => {
             />
             <br />
             <AnimeDetails animeInfo={animeInfo} />
+            <Comments animeId={name} />
+            {status === 'authenticated' && <CommentForm animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />}
           </main>
         </div>
       </div>

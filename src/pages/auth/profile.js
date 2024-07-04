@@ -1,71 +1,53 @@
 import { useEffect, useState } from 'react';
-import withAuth from '../../hoc/withAuth';
+import { useSession, signOut } from 'next-auth/react';
 import axios from 'axios';
-import { logout } from '../../utils/auth';
 import Link from 'next/link';
+import History from '@/components/History';
 
-const Profile = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+const Dashboard = () => {
+  const { data: session, status } = useSession();
   const [history, setHistory] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const token = localStorage.getItem('token');
+    if (session) {
+      const fetchHistory = async () => {
+        setLoadingHistory(true);
+        try {
+          const historyResponse = await axios.get('/api/history');
+          setHistory(historyResponse.data);
+          setError(null);
+        } catch (error) {
+          console.error('Error fetching history:', error);
+          setError('Failed to fetch history');
+        } finally {
+          setLoadingHistory(false);
+        }
+      };
 
-      //if (!token) {
-      //  logout();
-      //  return;
-      //}
-
-      try {
-        const profileResponse = await axios.get('/api/auth/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const profile = profileResponse.data;
-        setUsername(profile.username);
-        setEmail(profile.email);
-        localStorage.setItem('profile', JSON.stringify(profile));
-
-        // Fetch history
-        const historyResponse = await axios.get('/api/history/all', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setHistory(historyResponse.data);
-        localStorage.setItem('history', JSON.stringify(historyResponse.data));
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Optionally, do not log out the user here; instead, show an error message or try to refresh the token
-      }
-    };
-
-    if (typeof window !== 'undefined') {
-      const profile = JSON.parse(localStorage.getItem('profile'));
-      const storedHistory = JSON.parse(localStorage.getItem('history'));
-
-      if (profile) {
-        setUsername(profile.username);
-        setEmail(profile.email);
-      }
-
-      if (storedHistory) {
-        setHistory(storedHistory);
-      } else {
-        fetchUserProfile();
-      }
+      fetchHistory();
     }
-  }, []);
+  }, [session]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return `${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
   };
 
+  if (status === 'loading') {
+    return <p className="text-center text-gray-500">Loading...</p>;
+  }
+
+  if (status === 'unauthenticated') {
+    return <p className="text-center text-red-500">Please log in to view your dashboard.</p>;
+  }
+
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center text-gray-200">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 className="text-2xl sm:text-4xl font-bold text-yellow-500 mb-6 text-center">Your Profile</h2>
+        <h2 className="text-2xl sm:text-4xl font-bold text-yellow-500 mb-6 text-center">Your Dashboard</h2>
 
         <div className="mb-6 flex justify-around">
           <button
@@ -90,26 +72,35 @@ const Profile = () => {
 
         {activeTab === 'profile' && (
           <div className="text-center">
-            <p className="text-xl sm:text-2xl">Username: <span className="font-bold">{username}</span></p>
-            <p className="text-xl sm:text-2xl">Email: <span className="font-bold">{email}</span></p>
+            <img src={session.user.image} alt={session.user.name} className="w-16 h-16 rounded-full mx-auto mb-4" />
+            <p className="text-xl sm:text-2xl">Name: <span className="font-bold">{session.user.name}</span></p>
+            <p className="text-xl sm:text-2xl">Email: <span className="font-bold">{session.user.email}</span></p>
+            <p className="text-xl sm:text-2xl">ID: <span className="font-bold">{session.user.id}</span></p>
           </div>
         )}
 
         {activeTab === 'history' && (
           <div className="grid grid-cols-1 gap-4">
-            <p className="text-xl sm:text-2xl text-center">Not yet added..</p>
-            {history.map((item, index) => (
-              <div key={index} className="bg-gray-700 p-4 rounded-lg">
-                <p className="text-lg font-bold">Anime: {item.name}</p>
-                <p>Episode: {item.episodeNumber}</p>
-                <p>
-                  <Link className="text-blue-500 hover:text-blue-700" href={`/anime/${item.animeId}`}>
-                    Watch Anime 
-                  </Link>
-                </p>
-                <p>Watched: {formatDate(item.watchedAt)}</p>
-              </div>
-            ))}
+            {loadingHistory ? (
+              <p className="text-xl sm:text-2xl text-center">Loading history...</p>
+            ) : error ? (
+              <p className="text-xl sm:text-2xl text-center text-red-500">{error}</p>
+            ) : history.length === 0 ? (
+              <p className="text-xl sm:text-2xl text-center">No history available.</p>
+            ) : (
+              history.map((item, index) => (
+                <div key={index} className="bg-gray-700 p-4 rounded-lg">
+                  <p className="text-lg font-bold">Anime: {item.animeId}</p>
+                  <p>Episode: {item.episodeNumber}</p>
+                  <p>
+                    <Link className="text-blue-500 hover:text-blue-700" href={`/anime/${item.animeId}`}>
+                      Watch Anime
+                    </Link>
+                  </p>
+                  <p>Watched: {formatDate(item.watchedAt)}</p>
+                </div>
+              ))
+            )}
           </div>
         )}
 
@@ -121,7 +112,7 @@ const Profile = () => {
 
         <button
           onClick={() => {
-            logout();
+            signOut();
             localStorage.removeItem('profile');
             localStorage.removeItem('history');
           }}
@@ -134,4 +125,4 @@ const Profile = () => {
   );
 };
 
-export default withAuth(Profile);
+export default Dashboard;
