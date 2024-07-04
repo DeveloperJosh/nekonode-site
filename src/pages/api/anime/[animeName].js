@@ -101,7 +101,7 @@ export default async function handler(req, res) {
 
     res.json(responseData);
   } catch (error) {
-    console.error('Error retrieving anime info:', error);
+    //console.error('Error retrieving anime info:', error);
     res.status(500).json({ error: 'Failed to retrieve anime' });
   }
 }

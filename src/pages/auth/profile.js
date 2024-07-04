@@ -60,7 +60,7 @@ const Dashboard = () => {
             onClick={() => setActiveTab('history')}
             className={`py-2 px-4 ${activeTab === 'history' ? 'text-yellow-500' : 'text-gray-400'}`}
           >
-            History
+            Anime List
           </button>
           <button
             onClick={() => setActiveTab('settings')}
