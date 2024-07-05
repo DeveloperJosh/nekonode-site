@@ -22,6 +22,7 @@
     "mongoose": "^8.4.4",
     "net": "^1.0.2",
     "next": "14.2.4",
+    "next-auth": "^4.24.7",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.14",
     "react": "^18",

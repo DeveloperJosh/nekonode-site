@@ -35,6 +35,11 @@ export default async function handler(req, res) {
       episodeSources.push(episodeSource);
     });
 
+    // if sources are not found don't cache the response
+    if (episodeSources.length === 0) {
+      return res.status(404).json({ error: 'No sources found' });
+    }
+
     await setCache(cacheKey, episodeSources);
 
     return res.json(episodeSources);
@@ -47,8 +52,8 @@ export default async function handler(req, res) {
       if (!animeName) {
         throw new Error('Invalid episode name');
       }
-      const cacheKey = `${server}-${animeName}`;
-      const cachedData = await getCache(cacheKey);
+      const fallbackCacheKey = `${server}-${animeName}`;
+      const cachedData = await getCache(fallbackCacheKey);
 
       if (cachedData) {
         return res.json(cachedData);
@@ -62,12 +67,16 @@ export default async function handler(req, res) {
         animeSources.push(animeSource);
       });
 
-      await setCache(cacheKey, animeSources);
+      if (animeSources.length === 0) {
+        return res.status(404).json({ error: 'No sources found' });
+      }
+
+      await setCache(fallbackCacheKey, animeSources);
 
       return res.json(animeSources);
     } catch (fallbackError) {
-      console.error(`Error fetching anime ${animeName} from ${server}:`, fallbackError);
-      return res.status(500).json({ error: `Failed to fetch sources for both episode ${episode} and anime ${animeName}.` });
+      console.error(`Error fetching anime from ${server}:`, fallbackError);
+      return res.status(500).json({ error: `Failed to fetch sources for both episode ${episode} and anime.` });
     }
   }
 }

@@ -1,24 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { logout } from '../utils/auth';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import SearchBar from './SearchBar';
 
 const Navbar = () => {
+  const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   const handleLogout = () => {
-    logout();
-    setIsAuthenticated(false);
+    signOut();
   };
 
   return (
@@ -62,7 +56,7 @@ const Navbar = () => {
             <Link href="/news" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
               News
             </Link>
-            {isAuthenticated ? (
+            {status === "authenticated" ? (
               <>
                 <Link href="/auth/profile" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
                   Profile
@@ -76,12 +70,12 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link href="/auth/login" legacyBehavior>
-                  <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Login</a>
-                </Link>
-                <Link href="/auth/register" legacyBehavior>
-                  <a className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">Register</a>
-                </Link>
+                <button
+                  onClick={() => signIn('discord')}
+                  className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600"
+                >
+                  Login with Discord
+                </button>
               </>
             )}
           </div>
@@ -95,7 +89,7 @@ const Navbar = () => {
           <Link href="/news" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
             News
           </Link>
-          {isAuthenticated ? (
+          {status === "authenticated" ? (
             <>
               <Link href="/auth/profile" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
                 Profile
@@ -109,12 +103,12 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link href="/auth/login" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
-                Login
-              </Link>
-              <Link href="/auth/register" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
-                Register
-              </Link>
+              <button
+                onClick={() => signIn('discord')}
+                className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600"
+              >
+                Login with Discord
+              </button>
             </>
           )}
         </div>

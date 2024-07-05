@@ -3,7 +3,11 @@ import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import axios from 'axios';
 import Image from 'next/image';
+import Head from 'next/head';
 import EpisodePlayer from '@/components/EpisodePlayer';
+import { useSession } from 'next-auth/react';
+import Comments from '@/components/Comments';
+import CommentForm from '@/components/CommentForm';
 
 const api = "/api"; // Use the relative path for Next.js API
 const fetcher = url => axios.get(url).then(res => res.data);
@@ -12,6 +16,7 @@ const AnimePage = () => {
   const router = useRouter();
   const { name, ep } = router.query; // Extract the 'ep' parameter from the query
   const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher);
+  const { data: session, status } = useSession(); // Fetch the session
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [episodeSources, setEpisodeSources] = useState({});
@@ -87,11 +92,19 @@ const AnimePage = () => {
   };
 
   const handleEpisodeSelect = episodeNumber => {
-    router.push({
-      pathname: `/anime/${name}`,
-      query: { ep: episodeNumber }
-    }, undefined, { shallow: true });
-    fetchEpisodeDetails(episodeNumber);
+    const episodeNum = parseInt(episodeNumber, 10); // Convert to number
+    if (episodeNum === 0) {
+      router.push({
+        pathname: `/anime/${name}`
+      }, undefined, { shallow: true });
+      playByAnimeName(name);
+    } else {
+      router.push({
+        pathname: `/anime/${name}`,
+        query: { ep: episodeNum }
+      }, undefined, { shallow: true });
+      fetchEpisodeDetails(episodeNum);
+    }
   };
 
   const handlePageChange = (direction) => {
@@ -110,25 +123,7 @@ const AnimePage = () => {
   const totalPages = Math.ceil(episodes.length / episodesPerPage);
   const currentEpisodes = episodes.slice((currentPage - 1) * episodesPerPage, currentPage * episodesPerPage);
 
-  // Check if episode 0 exists
-  const hasEpisode0 = episodes.some(episode => episode.episodeNumber === 0);
-  const episodeButtons = [];
-  
-  // Add episode 0 button if it exists
-  if (hasEpisode0) {
-    episodeButtons.push(
-      <li key={0} className="mb-2">
-        <button
-          className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === 0 ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
-          onClick={() => handleEpisodeSelect(0)}
-        >
-          {`EP 0`}
-        </button>
-      </li>
-    );
-  }
-
-  episodeButtons.push(...currentEpisodes.map(episode => (
+  const episodeButtons = currentEpisodes.map(episode => (
     <li key={episode.episodeNumber} className="mb-2">
       <button
         className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === episode.episodeNumber ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
@@ -137,52 +132,69 @@ const AnimePage = () => {
         {`EP ${episode.episodeNumber}`}
       </button>
     </li>
-  )));
+  ));
 
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-200">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row">
-          <aside className="md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-4 md:mb-0 flex flex-col h-full">
-            <div className={`flex-1 overflow-y-auto ${episodes.length > 1 ? 'max-h-96' : 'max-h-auto'}`}> {/* Adjust max height */}
-              <h2 className="text-xl font-bold mb-4 text-yellow-500">Episodes</h2>
-              <div className="block md:hidden">
-                <select
-                  className="w-full bg-gray-700 text-yellow-500 p-2 rounded"
-                  onChange={(e) => handleEpisodeSelect(e.target.value)}
-                >
+    <>
+      <Head>
+        <title>{animeInfo.title}</title>
+        <meta name="description" content={animeInfo.description} />
+        <meta property="og:title" content={animeInfo.title} />
+        <meta property="og:description" content={animeInfo.description} />
+        <meta property="og:image" content={animeInfo.image} />
+      </Head>
+      <div className="bg-gray-900 min-h-screen text-gray-200">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row">
+            <aside className="md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-4 md:mb-0 flex flex-col h-full">
+              <div className={`flex-1 overflow-y-auto ${episodes.length > 1 ? 'max-h-96' : 'max-h-auto'}`}> {/* Adjust max height */}
+                <h2 className="text-xl font-bold mb-4 text-yellow-500">Episodes</h2>
+                <div className="block md:hidden">
+                  <select
+                    className="w-full bg-gray-700 text-yellow-500 p-2 rounded"
+                    onChange={(e) => handleEpisodeSelect(parseInt(e.target.value, 10))}
+                  >
+                    {currentEpisodes.map(episode => (
+                      <option key={episode.episodeNumber} value={episode.episodeNumber}>
+                        {`EP ${episode.episodeNumber}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <ul className="hidden md:block">
                   {episodeButtons}
-                </select>
+                </ul>
               </div>
-              <ul className="hidden md:block">
-                {episodeButtons}
-              </ul>
-            </div>
-            {episodes.length > episodesPerPage && (
-              <div className="flex justify-between mt-4">
-                <button onClick={() => handlePageChange(-1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600" disabled={currentPage <= 1}>
-                  Previous
-                </button>
-                <button onClick={() => handlePageChange(1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 ml-auto" disabled={currentPage >= totalPages}>
-                  Next
-                </button>
+              {episodes.length > episodesPerPage && (
+                <div className="flex justify-between mt-4">
+                  <button onClick={() => handlePageChange(-1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600" disabled={currentPage <= 1}>
+                    Previous
+                  </button>
+                  <button onClick={() => handlePageChange(1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 ml-auto" disabled={currentPage >= totalPages}>
+                    Next
+                  </button>
+                </div>
+              )}
+            </aside>
+            <main className="w-full md:w-3/4 md:ml-4">
+              <div style={{ minHeight: '300px' }}>
+                <EpisodePlayer
+                  episode={selectedEpisode}
+                  selectedQuality={selectedQuality}
+                  setSelectedQuality={setSelectedQuality}
+                  setSelectedServer={setSelectedServer}
+                  selectedServer={selectedServer}
+                />
               </div>
-            )}
-          </aside>
-          <main className="w-full md:w-3/4 md:ml-4">
-            <EpisodePlayer
-              episode={selectedEpisode}
-              selectedQuality={selectedQuality}
-              setSelectedQuality={setSelectedQuality}
-              setSelectedServer={setSelectedServer}
-              selectedServer={selectedServer}
-            />
-            <br />
-            <AnimeDetails animeInfo={animeInfo} />
-          </main>
+              <br />
+              <AnimeDetails animeInfo={animeInfo} />
+              <Comments animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />
+              {status === 'authenticated' && <CommentForm animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />}
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

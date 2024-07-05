@@ -1,31 +1,48 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import CustomDropdown from '@/components/CustomDropdown';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
 const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelectedServer, selectedServer }) => {
+  const [loading, setLoading] = useState(true);
+
   const sources = episode?.sources ?? [];
   const sourceUrl = useMemo(() => {
     const source = sources.find(source => source.quality === selectedQuality);
     return source ? source.source : sources[0]?.source;
   }, [sources, selectedQuality]);
 
+  const handleReady = () => {
+    setLoading(false);
+  };
+
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold text-yellow-500 mb-4 text-center">Episode {episode ? episode.episodeNumber : '1'}</h2>
-      <div className="player-wrapper">
-        {episode && episode.sources ? (
+      <div className="relative player-wrapper">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75">
+            <div className="w-16 h-16 border-4 border-blue-500 border-dotted rounded-full animate-spin"></div>
+          </div>
+        )}
+        {episode && episode.sources && (
           <ReactPlayer
             url={sourceUrl}
             controls
             width="100%"
             height="100%"
             className="react-player"
+            onReady={handleReady}
+            onStart={() => setLoading(true)}
           />
-        ) : (
-          <div className="text-center text-gray-300">Loading sources...</div>
         )}
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+        <p className="font-bold">Select Server:</p>
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+        <p className="font-bold text-sm">If one server isn't working, Try the next</p>
       </div>
       <div className="flex justify-center mt-4 space-x-4">
         <button
