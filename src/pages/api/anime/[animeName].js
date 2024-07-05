@@ -42,20 +42,39 @@ export default async function handler(req, res) {
 
     const $api = load(apiResponse.data);
     const episodes = [];
+
     $api('li').each((i, element) => {
       const episodeUrl = $api(element).find('a').attr('href');
       const episodeTitle = $api(element).find('.name').text().trim();
-      const episodeNumberMatch = episodeTitle.match(/Episode (\d+)/);
-      const episodeNumber = episodeNumberMatch ? parseInt(episodeNumberMatch[1], 10) : i + 1;
+      const episodeNumberMatch = episodeTitle.match(/EP (\d+)/i);
+      const episodeNumber = episodeNumberMatch ? parseInt(episodeNumberMatch[1], 10) : null;
 
       if (episodeUrl && episodeTitle) {
         episodes.push({
-          episodeNumber: episodeNumber,
+          episodeNumber,
           title: episodeTitle,
           url: `https://gogoanime3.co${episodeUrl.trim()}`,
         });
       }
     });
+
+    // Sort episodes by episode number
+    episodes.sort((a, b) => a.episodeNumber - b.episodeNumber);
+
+    // Determine if "EP 0" exists
+    const isEp0Found = episodes.some(ep => ep.title.toLowerCase().includes('ep 0'));
+
+    if (isEp0Found) {
+      // Renumber episodes starting from 0
+      episodes.forEach((episode, index) => {
+        episode.episodeNumber = index;
+      });
+    } else {
+      // Renumber starting from 1
+      episodes.forEach((episode, index) => {
+        episode.episodeNumber = index + 1;
+      });
+    }
 
     let anime = req.query.animeName;
     anime = anime.replace(/\s+/g, '-').toLowerCase();
@@ -101,7 +120,7 @@ export default async function handler(req, res) {
 
     res.json(responseData);
   } catch (error) {
-    //console.error('Error retrieving anime info:', error);
+    console.error('Error retrieving anime info:', error);
     res.status(500).json({ error: 'Failed to retrieve anime' });
   }
 }

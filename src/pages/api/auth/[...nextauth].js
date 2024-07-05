@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
-import dbConnect from '../../../lib/dbConnect';
-import User from '../../../models/User';
+import dbConnect from '@/lib/dbConnect';
+import User from '@/models/User';
 
 export const authOptions = {
   providers: [
@@ -12,8 +12,19 @@ export const authOptions = {
   ],
   callbacks: {
     async session({ session, token }) {
-      session.user.id = token.id;
-      session.accessToken = token.accessToken;
+      await dbConnect();
+      const user = await User.findById(token.id);
+      
+      if (user) {
+        session.user.id = user._id;
+        session.user.role = user.role;
+        session.user.banned = user.banned;
+        session.accessToken = token.accessToken;
+      } else {
+        session.user.role = null;
+        session.user.banned = null;
+      }
+      
       return session;
     },
     async jwt({ token, user, account }) {
@@ -28,17 +39,22 @@ export const authOptions = {
     async signIn({ user, account, profile }) {
       await dbConnect();
 
-      const existingUser = await User.findOne({ email: user.email });
+      let existingUser = await User.findOne({ email: user.email });
 
       if (!existingUser) {
-        await User.create({
+        existingUser = await User.create({
           _id: user.id,
           userId: user.id,
           name: user.name,
           email: user.email,
           image: user.image,
+          role: 'user',
           banned: false,
         });
+      }
+
+      if (existingUser.banned) {
+        return false;
       }
 
       return true;

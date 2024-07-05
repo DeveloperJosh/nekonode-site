@@ -6,6 +6,8 @@ const CommentSchema = new mongoose.Schema({
   episodeNumber: { type: Number, required: true },
   text: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, // Moderation status
 });
 
-export default mongoose.models.Comment || mongoose.model('Comment', CommentSchema);
+const Comment = mongoose.models.Comment || mongoose.model('Comment', CommentSchema);
+export default Comment;

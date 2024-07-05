@@ -25,11 +25,7 @@ const AnimePage = () => {
   useEffect(() => {
     if (name) {
       const episodeToPlay = ep ? parseInt(ep, 10) : 1; // Use 'ep' parameter or default to 1
-      if (episodeToPlay === 0) {
-        playByAnimeName(name); // Play the anime by its name if episode is 0
-      } else {
-        fetchEpisodeDetails(episodeToPlay);
-      }
+      fetchEpisodeDetails(episodeToPlay);
     }
   }, [name, ep, selectedServer]); 
 
@@ -58,19 +54,6 @@ const AnimePage = () => {
     }
   };
 
-  const playByAnimeName = async (animeName) => {
-    try {
-      const response = await axios.get(`${api}/watch/${animeName}`);
-      const sources = response.data;
-      setEpisodeSources(prevState => ({ ...prevState, [animeName]: { sources, server: selectedServer } }));
-      const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
-      setSelectedQuality(defaultQuality);
-      setSelectedEpisode({ episodeNumber: 0, episodeId: animeName, sources });
-    } catch (error) {
-      console.error('Error fetching anime sources:', error);
-    }
-  };
-
   const handleEpisodeSelect = episodeNumber => {
     const episodeNum = parseInt(episodeNumber, 10); // Convert to number
     router.push({
@@ -96,25 +79,7 @@ const AnimePage = () => {
   const totalPages = Math.ceil(episodes.length / episodesPerPage);
   const currentEpisodes = episodes.slice((currentPage - 1) * episodesPerPage, currentPage * episodesPerPage);
 
-  // Check if episode 0 exists
-  const hasEpisode0 = episodes.some(episode => episode.episodeNumber === 0);
-  const episodeButtons = [];
-  
-  // Add episode 0 button if it exists
-  if (hasEpisode0) {
-    episodeButtons.push(
-      <li key={0} className="mb-2">
-        <button
-          className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === 0 ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
-          onClick={() => handleEpisodeSelect(0)}
-        >
-          {`EP 0`}
-        </button>
-      </li>
-    );
-  }
-
-  episodeButtons.push(...currentEpisodes.map(episode => (
+  const episodeButtons = currentEpisodes.map(episode => (
     <li key={episode.episodeNumber} className="mb-2">
       <button
         className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === episode.episodeNumber ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
@@ -123,7 +88,7 @@ const AnimePage = () => {
         {`EP ${episode.episodeNumber}`}
       </button>
     </li>
-  )));
+  ));
 
   return (
     <div className="bg-gray-900 min-h-screen text-gray-200">
@@ -142,7 +107,6 @@ const AnimePage = () => {
                       {`EP ${episode.episodeNumber}`}
                     </option>
                   ))}
-                  {hasEpisode0 && <option value="0">EP 0</option>}
                 </select>
               </div>
               <ul className="hidden md:block">
