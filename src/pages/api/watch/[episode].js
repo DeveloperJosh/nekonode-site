@@ -75,8 +75,8 @@ export default async function handler(req, res) {
 
       return res.json(animeSources);
     } catch (fallbackError) {
-      console.error(`Error fetching anime ${animeName} from ${server}:`, fallbackError);
-      return res.status(500).json({ error: `Failed to fetch sources for both episode ${episode} and anime ${animeName}.` });
+      console.error(`Error fetching anime from ${server}:`, fallbackError);
+      return res.status(500).json({ error: `Failed to fetch sources for both episode ${episode} and anime.` });
     }
   }
 }

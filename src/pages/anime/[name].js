@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import axios from 'axios';
 import Image from 'next/image';
+import Head from 'next/head';
 import EpisodePlayer from '@/components/EpisodePlayer';
 import { useSession } from 'next-auth/react';
 import Comments from '@/components/Comments';
@@ -25,7 +26,11 @@ const AnimePage = () => {
   useEffect(() => {
     if (name) {
       const episodeToPlay = ep ? parseInt(ep, 10) : 1; // Use 'ep' parameter or default to 1
-      fetchEpisodeDetails(episodeToPlay);
+      if (episodeToPlay === 0) {
+        playByAnimeName(name); // Play the anime by its name if episode is 0
+      } else {
+        fetchEpisodeDetails(episodeToPlay);
+      }
     }
   }, [name, ep, selectedServer]); 
 
@@ -43,6 +48,7 @@ const AnimePage = () => {
         setSelectedEpisode(prevState => ({ ...prevState, sources }));
         let AnimeName = episodeId.split('-episode-')[0];
         AnimeName = AnimeName.replace(/-/g, ' ').toUpperCase(); 
+        addHistory(AnimeName, episodeId, episodeNumber);
       } catch (error) {
         console.error('Error fetching episode sources:', error);
       }
@@ -54,13 +60,51 @@ const AnimePage = () => {
     }
   };
 
+  const playByAnimeName = async (animeName) => {
+    try {
+      const response = await axios.get(`${api}/watch/${animeName}`);
+      const sources = response.data;
+      setEpisodeSources(prevState => ({ ...prevState, [animeName]: { sources, server: selectedServer } }));
+      const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
+      setSelectedQuality(defaultQuality);
+      setSelectedEpisode({ episodeNumber: 0, episodeId: animeName, sources });
+      addHistory(animeName, animeName, 0);
+    } catch (error) {
+      console.error('Error fetching anime sources:', error);
+    }
+  };
+
+  const addHistory = async (name, animeId, episodeNumber) => {
+    try {
+      const response = await axios.post(`${api}/history/add`, {
+        name,
+        animeId,
+        episodeNumber
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure the token is correctly set
+        }
+      });
+      console.log('History added:', response.data.message);
+    } catch (error) {
+      console.error('Error adding history:', error.response?.data?.error || error.message);
+    }
+  };
+
   const handleEpisodeSelect = episodeNumber => {
     const episodeNum = parseInt(episodeNumber, 10); // Convert to number
-    router.push({
-      pathname: `/anime/${name}`,
-      query: { ep: episodeNum }
-    }, undefined, { shallow: true });
-    fetchEpisodeDetails(episodeNum);
+    if (episodeNum === 0) {
+      router.push({
+        pathname: `/anime/${name}`
+      }, undefined, { shallow: true });
+      playByAnimeName(name);
+    } else {
+      router.push({
+        pathname: `/anime/${name}`,
+        query: { ep: episodeNum }
+      }, undefined, { shallow: true });
+      fetchEpisodeDetails(episodeNum);
+    }
   };
 
   const handlePageChange = (direction) => {
@@ -91,57 +135,66 @@ const AnimePage = () => {
   ));
 
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-200">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row">
-          <aside className="md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-4 md:mb-0 flex flex-col h-full">
-            <div className={`flex-1 overflow-y-auto ${episodes.length > 1 ? 'max-h-96' : 'max-h-auto'}`}> {/* Adjust max height */}
-              <h2 className="text-xl font-bold mb-4 text-yellow-500">Episodes</h2>
-              <div className="block md:hidden">
-                <select
-                  className="w-full bg-gray-700 text-yellow-500 p-2 rounded"
-                  onChange={(e) => handleEpisodeSelect(e.target.value)}
-                >
-                  {currentEpisodes.map(episode => (
-                    <option key={episode.episodeNumber} value={episode.episodeNumber}>
-                      {`EP ${episode.episodeNumber}`}
-                    </option>
-                  ))}
-                </select>
+    <>
+      <Head>
+        <title>{animeInfo.title}</title>
+        <meta name="description" content={animeInfo.description} />
+        <meta property="og:title" content={animeInfo.title} />
+        <meta property="og:description" content={animeInfo.description} />
+        <meta property="og:image" content={animeInfo.image} />
+      </Head>
+      <div className="bg-gray-900 min-h-screen text-gray-200">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row">
+            <aside className="md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-4 md:mb-0 flex flex-col h-full">
+              <div className={`flex-1 overflow-y-auto ${episodes.length > 1 ? 'max-h-96' : 'max-h-auto'}`}> {/* Adjust max height */}
+                <h2 className="text-xl font-bold mb-4 text-yellow-500">Episodes</h2>
+                <div className="block md:hidden">
+                  <select
+                    className="w-full bg-gray-700 text-yellow-500 p-2 rounded"
+                    onChange={(e) => handleEpisodeSelect(parseInt(e.target.value, 10))}
+                  >
+                    {currentEpisodes.map(episode => (
+                      <option key={episode.episodeNumber} value={episode.episodeNumber}>
+                        {`EP ${episode.episodeNumber}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <ul className="hidden md:block">
+                  {episodeButtons}
+                </ul>
               </div>
-              <ul className="hidden md:block">
-                {episodeButtons}
-              </ul>
-            </div>
-            {episodes.length > episodesPerPage && (
-              <div className="flex justify-between mt-4">
-                <button onClick={() => handlePageChange(-1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600" disabled={currentPage <= 1}>
-                  Previous
-                </button>
-                <button onClick={() => handlePageChange(1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 ml-auto" disabled={currentPage >= totalPages}>
-                  Next
-                </button>
+              {episodes.length > episodesPerPage && (
+                <div className="flex justify-between mt-4">
+                  <button onClick={() => handlePageChange(-1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600" disabled={currentPage <= 1}>
+                    Previous
+                  </button>
+                  <button onClick={() => handlePageChange(1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 ml-auto" disabled={currentPage >= totalPages}>
+                    Next
+                  </button>
+                </div>
+              )}
+            </aside>
+            <main className="w-full md:w-3/4 md:ml-4">
+              <div style={{ minHeight: '300px' }}>
+                <EpisodePlayer
+                  episode={selectedEpisode}
+                  selectedQuality={selectedQuality}
+                  setSelectedQuality={setSelectedQuality}
+                  setSelectedServer={setSelectedServer}
+                  selectedServer={selectedServer}
+                />
               </div>
-            )}
-          </aside>
-          <main className="w-full md:w-3/4 md:ml-4">
-            <div style={{minHeight: '300px'}}>
-              <EpisodePlayer
-                episode={selectedEpisode}
-                selectedQuality={selectedQuality}
-                setSelectedQuality={setSelectedQuality}
-                setSelectedServer={setSelectedServer}
-                selectedServer={selectedServer}
-              />
-            </div>
-            <br />
-            <AnimeDetails animeInfo={animeInfo} />
-            <Comments animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />
-            {status === 'authenticated' && <CommentForm animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />}
-          </main>
+              <br />
+              <AnimeDetails animeInfo={animeInfo} />
+              <Comments animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />
+              {status === 'authenticated' && <CommentForm animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />}
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

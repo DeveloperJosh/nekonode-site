@@ -50,6 +50,7 @@ export const authOptions = {
           image: user.image,
           role: 'user',
           banned: false,
+          //animelist: [],
         });
       }
 
