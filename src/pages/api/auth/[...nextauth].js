@@ -32,9 +32,12 @@ export const authOptions = {
 
       if (!existingUser) {
         await User.create({
+          _id: user.id,
+          userId: user.id,
           name: user.name,
           email: user.email,
           image: user.image,
+          banned: false,
         });
       }
 
@@ -44,8 +47,8 @@ export const authOptions = {
   pages: {
     signIn: '/auth/signin',  // Custom sign-in page URL
   },
-  secret: process.env.JWT_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',  // Enable debug mode
 };
 
 export default NextAuth(authOptions);
