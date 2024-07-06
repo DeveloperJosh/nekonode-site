@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import axios from 'axios';
 import Link from 'next/link';
-import History from '@/components/History';
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
