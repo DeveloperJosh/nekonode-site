@@ -1,14 +1,13 @@
-// components/Timetable.js
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+
+const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 const Timetable = () => {
   const [timetable, setTimetable] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [currentDayIndex, setCurrentDayIndex] = useState(new Date().getDay());
   const [viewedDate, setViewedDate] = useState(new Date());
-
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
   useEffect(() => {
     const getCurrentDay = () => {
@@ -27,7 +26,7 @@ const Timetable = () => {
     };
 
     getData();
-  }, [currentDayIndex]);
+  }, [currentDayIndex]); // Removed 'days' from dependency array
 
   const formatDate = (timeString) => {
     if (!timeString) return 'N/A';
@@ -63,8 +62,12 @@ const Timetable = () => {
   const filteredTimetable = timetable ? timetable.filter(entry => filterPastAnime(entry.broadcast.time)) : [];
 
   const formatName = (anime) => {
-    return anime.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '-').toLowerCase();
+    return anime
+      .replace(/[^a-zA-Z0-9- ]/g, "")
+      .replace(/\s+/g, '-')
+      .toLowerCase();
   };
+  
 
   const goToNextDay = () => {
     setCurrentDayIndex((prevIndex) => (prevIndex + 1) % 7);

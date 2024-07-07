@@ -54,7 +54,7 @@ const SearchResults = () => {
     <div className="bg-gray-900 min-h-screen text-gray-200">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
-          <h1 className="text-2xl sm:text-4xl font-bold text-yellow-500 mb-4 sm:mb-0">Search Results for "{query}"</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold text-yellow-500 mb-4 sm:mb-0">Search Results for &quot;{query}&quot;</h1>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {results.length > 0 ? (
@@ -75,7 +75,7 @@ const SearchResults = () => {
               </Link>
             ))
           ) : (
-            <p className="text-center text-gray-300">No results found for "{query}".</p>
+            <p className="text-center text-gray-300">No results found for &quot;{query}&quot;.</p>
           )}
         </div>
         <div className="flex justify-center items-center mt-6">
