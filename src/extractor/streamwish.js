@@ -89,7 +89,7 @@ class StreamWish {
         return cachedSources;
       }
 
-      const response = await axios.get(`${baseUrl}/${episodeID}`);
+      const response = await this.client.get(`${baseUrl}/${episodeID}`);
       const $ = load(response.data);
       let sources = [];
 
