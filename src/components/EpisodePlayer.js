@@ -7,7 +7,8 @@ const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelectedServer, selectedServer }) => {
   const [loading, setLoading] = useState(true);
 
-  const sources = episode?.sources ?? [];
+  const sources = useMemo(() => episode?.sources ?? [], [episode]);
+
   const sourceUrl = useMemo(() => {
     const source = sources.find(source => source.quality === selectedQuality);
     return source ? source.source : sources[0]?.source;
@@ -42,7 +43,7 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelect
         <p className="font-bold">Select Server:</p>
       </div>
       <div className="flex justify-center mt-4 space-x-4">
-        <p className="font-bold text-sm">If one server isn't working, Try the next</p>
+        <p className="font-bold text-sm">If one server isn&apos;t working, Try the next</p>
       </div>
       <div className="flex justify-center mt-4 space-x-4">
         <button

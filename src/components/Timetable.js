@@ -1,14 +1,13 @@
-// components/Timetable.js
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+
+const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 const Timetable = () => {
   const [timetable, setTimetable] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [currentDayIndex, setCurrentDayIndex] = useState(new Date().getDay());
   const [viewedDate, setViewedDate] = useState(new Date());
-
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
   useEffect(() => {
     const getCurrentDay = () => {
@@ -27,7 +26,7 @@ const Timetable = () => {
     };
 
     getData();
-  }, [currentDayIndex]);
+  }, [currentDayIndex]); // Removed 'days' from dependency array
 
   const formatDate = (timeString) => {
     if (!timeString) return 'N/A';
