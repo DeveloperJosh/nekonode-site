@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import axios from 'axios';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -117,7 +118,13 @@ const Dashboard = () => {
 
         {activeTab === 'profile' && (
           <div className="text-center">
-            <img src={session.user.image} alt={session.user.name} className="w-16 h-16 rounded-full mx-auto mb-4" />
+            <Image 
+              src={session.user.image} 
+              alt={session.user.name} 
+              className="w-16 h-16 rounded-full mx-auto mb-4" 
+              width={64} 
+              height={64} 
+            />
             <p className="text-xl sm:text-2xl">Name: <span className="font-bold">{session.user.name}</span></p>
             <p className="text-xl sm:text-2xl">Email: <span className="font-bold">{session.user.email}</span></p>
             <p className="text-xl sm:text-2xl">ID: <span className="font-bold">{session.user.id}</span></p>
@@ -138,7 +145,7 @@ const Dashboard = () => {
                   <p className="text-lg font-bold">Anime: {item.animeId}</p>
                   <p>Episode: {item.episodeNumber}</p>
                   <p>
-                    <Link className="text-blue-500 hover:text-blue-700" href={`/anime/${item.animeId}`}>
+                    <Link href={`/anime/${item.animeId}`} className="text-blue-500 hover:text-blue-700">
                       Watch Anime
                     </Link>
                   </p>
@@ -167,7 +174,13 @@ const Dashboard = () => {
               comments.map((comment) => (
                 <div key={comment._id} className="bg-gray-700 p-4 rounded-lg">
                   <div className="flex items-center mb-2">
-                    <img src={comment.user.image} alt={comment.user.name} className="w-10 h-10 rounded-full mr-2" />
+                    <Image 
+                      src={comment.user.image} 
+                      alt={comment.user.name} 
+                      className="w-10 h-10 rounded-full mr-2" 
+                      width={40} 
+                      height={40} 
+                    />
                     <span className="font-semibold">{comment.user.name} | {comment.animeId}-episode-{comment.episodeNumber}</span>
                   </div>
                   <p>{comment.text}</p>

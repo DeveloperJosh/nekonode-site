@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -23,19 +23,9 @@ const AnimePage = () => {
   const [selectedQuality, setSelectedQuality] = useState('1080p');
   const [selectedServer, setSelectedServer] = useState('gogocdn'); 
 
-  useEffect(() => {
-    if (name && animeData) {
-      const firstEpisode = animeData.episodes[0]?.episodeNumber;
-      const episodeToPlay = ep ? parseInt(ep, 10) : firstEpisode;
-      if (episodeToPlay === 0) {
-        playByAnimeName(name); // Play the anime by its name if episode is 0
-      } else {
-        fetchEpisodeDetails(episodeToPlay);
-      }
-    }
-  }, [name, ep, selectedServer, animeData]);
+  const fetchEpisodeDetails = useCallback(async (episodeNumber) => {
+    if (!name) return;
 
-  const fetchEpisodeDetails = async (episodeNumber) => {
     const episodeId = `${name}-episode-${episodeNumber}`;
     setSelectedEpisode({ episodeNumber, episodeId, sources: null });
 
@@ -56,9 +46,11 @@ const AnimePage = () => {
         setSelectedQuality(episodeSources[episodeId].sources[0].quality);
       }
     }
-  };
+  }, [name, selectedServer, episodeSources, selectedQuality]);
 
-  const playByAnimeName = async (animeName) => {
+  const playByAnimeName = useCallback(async (animeName) => {
+    if (!animeName) return;
+
     try {
       const response = await axios.get(`${api}/watch/${animeName}`);
       const sources = response.data;
@@ -69,7 +61,19 @@ const AnimePage = () => {
     } catch (error) {
       console.error('Error fetching anime sources:', error);
     }
-  };
+  }, [selectedServer]);
+
+  useEffect(() => {
+    if (name && animeData) {
+      const firstEpisode = animeData.episodes[0]?.episodeNumber;
+      const episodeToPlay = ep ? parseInt(ep, 10) : firstEpisode;
+      if (episodeToPlay === 0) {
+        playByAnimeName(name); // Play the anime by its name if episode is 0
+      } else {
+        fetchEpisodeDetails(episodeToPlay);
+      }
+    }
+  }, [name, ep, selectedServer, animeData, fetchEpisodeDetails, playByAnimeName]);
 
   const handleEpisodeSelect = episodeNumber => {
     const episodeNum = parseInt(episodeNumber, 10); // Convert to number
@@ -93,7 +97,13 @@ const AnimePage = () => {
   };
 
   if (!animeData && !error) {
-    return <div className="text-center mt-8 text-white">Loading...</div>;
+    return (
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-yellow-500 mx-auto"></div>
+        <h2 className="text-zinc-900 dark:text-white mt-4">Loading...</h2>
+        <p className="text-zinc-600 dark:text-zinc-400">Your Anime adventure is about to begin</p>
+      </div>
+    );
   }
   if (error) {
     return <div className="text-center mt-8 text-red-500">Failed to load anime data</div>;
@@ -149,10 +159,10 @@ const AnimePage = () => {
               {episodes.length > episodesPerPage && (
                 <div className="flex justify-between mt-4">
                   <button onClick={() => handlePageChange(-1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600" disabled={currentPage <= 1}>
-                    Previous
+                    &#10094;
                   </button>
                   <button onClick={() => handlePageChange(1)} className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 ml-auto" disabled={currentPage >= totalPages}>
-                    Next
+                    &#10095;
                   </button>
                 </div>
               )}
