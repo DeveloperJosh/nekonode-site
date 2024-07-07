@@ -24,9 +24,9 @@ function MyApp({ Component, pageProps }) {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#01a0e9" />
-        <meta name="description" content="NekoNode the best Anime CLI/Site there is" />
+        <meta name="description" content="NekoNode is the best platform offering you free anime streaming that allows you to watch anime online with English subtitles and dubbing." />
         <meta property="og:title" content="NekoNode" />
-        <meta property="og:description" content="NekoNode the best Anime CLI/Site there is" />
+        <meta property="og:description" content="NekoNode is the best platform offering you free anime streaming that allows you to watch anime online with English subtitles and dubbing." />
         <title>NekoNode</title>
       </Head>
       <div className="bg-gray-900 min-h-screen text-gray-200 flex flex-col">
