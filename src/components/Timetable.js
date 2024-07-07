@@ -62,8 +62,12 @@ const Timetable = () => {
   const filteredTimetable = timetable ? timetable.filter(entry => filterPastAnime(entry.broadcast.time)) : [];
 
   const formatName = (anime) => {
-    return anime.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '-').toLowerCase();
+    return anime
+      .replace(/[^a-zA-Z0-9- ]/g, "")
+      .replace(/\s+/g, '-')
+      .toLowerCase();
   };
+  
 
   const goToNextDay = () => {
     setCurrentDayIndex((prevIndex) => (prevIndex + 1) % 7);
