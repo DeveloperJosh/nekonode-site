@@ -1,29 +1,25 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import CustomDropdown from '@/components/CustomDropdown';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
-const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality }) => {
+const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelectedServer, selectedServer }) => {
   const [loading, setLoading] = useState(true);
 
   const sources = episode?.sources ?? [];
   const sourceUrl = useMemo(() => {
     const source = sources.find(source => source.quality === selectedQuality);
-    return source ? source.url : sources[0]?.url;
+    return source ? source.source : sources[0]?.source;
   }, [sources, selectedQuality]);
 
   const handleReady = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    setLoading(true);
-  }, [sourceUrl]);
-
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-yellow-500 mb-4 text-center">Episode {episode ? episode.episodeNumber : '1'}</h2>
+      <h2 className="text-2xl font-bold text-yellow-500 mb-4 text-center">Episode {episode ? episode.episodeNumber : '0'}</h2>
       <div className="relative player-wrapper">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75">
@@ -38,10 +34,29 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality }) => {
             height="100%"
             className="react-player"
             onReady={handleReady}
+            onStart={() => setLoading(true)}
           />
         )}
       </div>
       <div className="flex justify-center mt-4 space-x-4">
+        <p className="font-bold">Select Server:</p>
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+        <p className="font-bold text-sm">If one server isn't working, Try the next</p>
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+        <button
+          onClick={() => setSelectedServer('gogocdn')}
+          className={`px-4 py-2 mx-2 rounded ${selectedServer === 'gogocdn' ? 'bg-yellow-500 text-gray-800' : 'bg-gray-700 text-gray-300'}`}
+        >
+          Neko
+        </button>
+        <button
+          onClick={() => setSelectedServer('streamwish')}
+          className={`px-4 py-2 mx-2 rounded ${selectedServer === 'streamwish' ? 'bg-yellow-500 text-gray-800' : 'bg-gray-700 text-gray-300'}`}
+        >
+          StreamWish
+        </button>
         <CustomDropdown
           label="Quality"
           options={sources.map(source => source.quality)}

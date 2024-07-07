@@ -18,7 +18,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Check if the episode sources are cached
     const cacheKey = `${server}-${episode}`;
     const cachedData = await getCache(cacheKey);
 
@@ -26,16 +25,44 @@ export default async function handler(req, res) {
       return res.json(cachedData);
     }
 
-    // If not cached, fetch the episode sources
-    const episodeSourceData = await selectedServer.getEpisodeSources(episode);
+    // Check if the episode is 0, and if so, fetch sources by anime name
     let episodeSources = [];
+    if (episode === '0') {
+      const animeName = req.query.name;
+      if (!animeName) {
+        return res.status(400).json({ error: 'Anime name is required when episode is 0' });
+      }
 
+      const animeCacheKey = `${server}-${animeName}`;
+      const cachedAnimeData = await getCache(animeCacheKey);
+
+      if (cachedAnimeData) {
+        return res.json(cachedAnimeData);
+      }
+
+      const animeSourceData = await selectedServer.getEpisodeSources(animeName);
+      animeSourceData.forEach(sourceData => {
+        let animeSource = { source: sourceData.url, quality: sourceData.quality };
+        episodeSources.push(animeSource);
+      });
+
+      if (episodeSources.length === 0) {
+        return res.status(404).json({ error: 'No sources found' });
+      }
+
+      await setCache(animeCacheKey, episodeSources);
+
+      return res.json(episodeSources);
+    }
+
+    // If not cached, fetch the episode sources for a specific episode number
+    const episodeSourceData = await selectedServer.getEpisodeSources(episode);
     episodeSourceData.forEach(sourceData => {
       let episodeSource = { source: sourceData.url, quality: sourceData.quality };
       episodeSources.push(episodeSource);
     });
 
-    // if sources are not found don't cache the response
+    // If sources are not found, don't cache the response
     if (episodeSources.length === 0) {
       return res.status(404).json({ error: 'No sources found' });
     }
@@ -45,38 +72,6 @@ export default async function handler(req, res) {
     return res.json(episodeSources);
   } catch (error) {
     console.error(`Error fetching episode ${episode} from ${server}:`, error);
-    
-    try {
-      // Attempt to fetch sources by anime name as a fallback
-      const animeName = episode.split('-episode-')[0];
-      if (!animeName) {
-        throw new Error('Invalid episode name');
-      }
-      const fallbackCacheKey = `${server}-${animeName}`;
-      const cachedData = await getCache(fallbackCacheKey);
-
-      if (cachedData) {
-        return res.json(cachedData);
-      }
-
-      const animeSourceData = await selectedServer.getEpisodeSources(animeName);
-      let animeSources = [];
-
-      animeSourceData.forEach(sourceData => {
-        let animeSource = { source: sourceData.url, quality: sourceData.quality };
-        animeSources.push(animeSource);
-      });
-
-      if (animeSources.length === 0) {
-        return res.status(404).json({ error: 'No sources found' });
-      }
-
-      await setCache(fallbackCacheKey, animeSources);
-
-      return res.json(animeSources);
-    } catch (fallbackError) {
-      console.error(`Error fetching anime from ${server}:`, fallbackError);
-      return res.status(500).json({ error: `Failed to fetch sources for both episode ${episode} and anime.` });
-    }
+    return res.status(500).json({ error: `Failed to fetch sources for episode ${episode}.` });
   }
 }
