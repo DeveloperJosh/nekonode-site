@@ -8,9 +8,12 @@ const servers = {
   // Add other servers here
 };
 
+const generateETag = (data) => {
+  return `"${Buffer.from(JSON.stringify(data)).toString('base64')}"`;
+};
+
 export default async function handler(req, res) {
   const { episode, server = 'gogocdn' } = req.query; // Default to 'gogocdn' if no server is specified
-
   const selectedServer = servers[server.toLowerCase()];
 
   if (!selectedServer) {
@@ -22,10 +25,16 @@ export default async function handler(req, res) {
     const cachedData = await getCache(cacheKey);
 
     if (cachedData) {
+      const etag = generateETag(cachedData);
+      res.setHeader('ETag', etag);
+
+      if (req.headers['if-none-match'] === etag) {
+        return res.status(304).end();
+      }
+
       return res.json(cachedData);
     }
 
-    // Check if the episode is 0, and if so, fetch sources by anime name
     let episodeSources = [];
     if (episode === '0') {
       const animeName = req.query.name;
@@ -37,14 +46,21 @@ export default async function handler(req, res) {
       const cachedAnimeData = await getCache(animeCacheKey);
 
       if (cachedAnimeData) {
+        const etag = generateETag(cachedAnimeData);
+        res.setHeader('ETag', etag);
+
+        if (req.headers['if-none-match'] === etag) {
+          return res.status(304).end();
+        }
+
         return res.json(cachedAnimeData);
       }
 
       const animeSourceData = await selectedServer.getEpisodeSources(animeName);
-      animeSourceData.forEach(sourceData => {
-        let animeSource = { source: sourceData.url, quality: sourceData.quality };
-        episodeSources.push(animeSource);
-      });
+      episodeSources = animeSourceData.map(sourceData => ({
+        source: sourceData.url,
+        quality: sourceData.quality,
+      }));
 
       if (episodeSources.length === 0) {
         return res.status(404).json({ error: 'No sources found' });
@@ -52,23 +68,25 @@ export default async function handler(req, res) {
 
       await setCache(animeCacheKey, episodeSources);
 
+      const etag = generateETag(episodeSources);
+      res.setHeader('ETag', etag);
       return res.json(episodeSources);
     }
 
-    // If not cached, fetch the episode sources for a specific episode number
     const episodeSourceData = await selectedServer.getEpisodeSources(episode);
-    episodeSourceData.forEach(sourceData => {
-      let episodeSource = { source: sourceData.url, quality: sourceData.quality };
-      episodeSources.push(episodeSource);
-    });
+    episodeSources = episodeSourceData.map(sourceData => ({
+      source: sourceData.url,
+      quality: sourceData.quality,
+    }));
 
-    // If sources are not found, don't cache the response
     if (episodeSources.length === 0) {
       return res.status(404).json({ error: 'No sources found' });
     }
 
     await setCache(cacheKey, episodeSources);
 
+    const etag = generateETag(episodeSources);
+    res.setHeader('ETag', etag);
     return res.json(episodeSources);
   } catch (error) {
     console.error(`Error fetching episode ${episode} from ${server}:`, error);

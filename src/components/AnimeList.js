@@ -3,7 +3,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const AnimeList = ({ animes }) => {
-  const displayedAnimes = animes.slice(0, 20); 
+  // Filter out animes with episode number 0
+  const filteredAnimes = animes.filter(anime => anime.episodeNumber !== 0);
+  const displayedAnimes = filteredAnimes.slice(0, 20); 
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-5 gap-2"> {/* Adjusted grid columns and gap */}

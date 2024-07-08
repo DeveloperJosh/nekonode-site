@@ -15,53 +15,79 @@ const fetcher = url => axios.get(url).then(res => res.data);
 const AnimePage = () => {
   const router = useRouter();
   const { name, ep } = router.query; // Extract the 'ep' parameter from the query
-  const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher);
+  const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher, {
+    revalidateOnFocus: false, // Disable revalidation on focus
+    dedupingInterval: 60000, // Deduping interval to avoid duplicate requests within a minute
+  });
   const { data: session, status } = useSession(); // Fetch the session
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [episodeSources, setEpisodeSources] = useState({});
   const [selectedQuality, setSelectedQuality] = useState('1080p');
   const [selectedServer, setSelectedServer] = useState('gogocdn'); 
+  const [fetchStatus, setFetchStatus] = useState({}); // Track fetch status
 
   const fetchEpisodeDetails = useCallback(async (episodeNumber) => {
     if (!name) return;
 
     const episodeId = `${name}-episode-${episodeNumber}`;
+
+    // Check if we've already successfully fetched this episode and server
+    if (fetchStatus[episodeId] && fetchStatus[episodeId][selectedServer]) {
+      setSelectedEpisode({ episodeNumber, episodeId, sources: episodeSources[episodeId].sources });
+      return;
+    }
+
     setSelectedEpisode({ episodeNumber, episodeId, sources: null });
 
-    if (!episodeSources[episodeId] || episodeSources[episodeId].server !== selectedServer) { // Check for server
-      try {
-        const response = await axios.get(`${api}/watch/${episodeId}?server=${selectedServer}`); // Include server in API request
-        const sources = response.data;
-        setEpisodeSources(prevState => ({ ...prevState, [episodeId]: { sources, server: selectedServer } })); // Store server with sources
-        const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
-        setSelectedQuality(defaultQuality);
-        setSelectedEpisode(prevState => ({ ...prevState, sources }));
-      } catch (error) {
-        console.error('Error fetching episode sources:', error);
-      }
-    } else {
-      setSelectedEpisode(prevState => ({ ...prevState, sources: episodeSources[episodeId].sources }));
-      if (!episodeSources[episodeId].sources.some(source => source.quality === selectedQuality)) {
-        setSelectedQuality(episodeSources[episodeId].sources[0].quality);
-      }
+    try {
+      const response = await axios.get(`${api}/watch/${episodeId}?server=${selectedServer}`); // Include server in API request
+      const sources = response.data;
+
+      // Update the fetch status
+      setFetchStatus(prevState => ({
+        ...prevState,
+        [episodeId]: { ...prevState[episodeId], [selectedServer]: true }
+      }));
+
+      setEpisodeSources(prevState => ({ ...prevState, [episodeId]: { sources, server: selectedServer } })); // Store server with sources
+      const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
+      setSelectedQuality(defaultQuality);
+      setSelectedEpisode({ episodeNumber, episodeId, sources });
+    } catch (error) {
+      console.error('Error fetching episode sources:', error);
     }
-  }, [name, selectedServer, episodeSources, selectedQuality]);
+  }, [name, selectedServer, episodeSources, selectedQuality, fetchStatus]);
 
   const playByAnimeName = useCallback(async (animeName) => {
     if (!animeName) return;
 
+    const episodeId = `${animeName}-episode-0`;
+
+    // Check if we've already successfully fetched this anime and server
+    if (fetchStatus[episodeId] && fetchStatus[episodeId][selectedServer]) {
+      setSelectedEpisode({ episodeNumber: 0, episodeId, sources: episodeSources[episodeId].sources });
+      return;
+    }
+
     try {
-      const response = await axios.get(`${api}/watch/${animeName}`);
+      const response = await axios.get(`${api}/watch/${animeName}?server=${selectedServer}`);
       const sources = response.data;
-      setEpisodeSources(prevState => ({ ...prevState, [animeName]: { sources, server: selectedServer } }));
+
+      // Update the fetch status
+      setFetchStatus(prevState => ({
+        ...prevState,
+        [episodeId]: { ...prevState[episodeId], [selectedServer]: true }
+      }));
+
+      setEpisodeSources(prevState => ({ ...prevState, [episodeId]: { sources, server: selectedServer } }));
       const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
       setSelectedQuality(defaultQuality);
-      setSelectedEpisode({ episodeNumber: 0, episodeId: animeName, sources });
+      setSelectedEpisode({ episodeNumber: 0, episodeId, sources });
     } catch (error) {
       console.error('Error fetching anime sources:', error);
     }
-  }, [selectedServer]);
+  }, [selectedServer, fetchStatus, episodeSources]);
 
   useEffect(() => {
     if (name && animeData) {
