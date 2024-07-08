@@ -57,7 +57,7 @@ const AnimePage = () => {
     } catch (error) {
       console.error('Error fetching episode sources:', error);
     }
-  }, [name, selectedServer, episodeSources, selectedQuality, fetchStatus]);
+  }, [name, selectedServer, episodeSources, fetchStatus]);
 
   const playByAnimeName = useCallback(async (animeName) => {
     if (!animeName) return;
