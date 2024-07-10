@@ -1,42 +1,48 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import axios from 'axios';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
+import UpdateToList from '@/components/Updatetolist';
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
-  const [history, setHistory] = useState([]);
-  const [activeTab, setActiveTab] = useState('profile');
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const router = useRouter();
+  const [animeList, setAnimeList] = useState([]);
+  const [activeTab, setActiveTab] = useState(router.query.tab || 'profile');
+  const [loadingAnimeList, setLoadingAnimeList] = useState(false);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [okMessage, setOkMessage] = useState('');
+  const [selectedAnime, setSelectedAnime] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (session) {
-      const fetchHistory = async () => {
-        setLoadingHistory(true);
+      const fetchAnimeList = async () => {
+        setLoadingAnimeList(true);
         try {
-          const historyResponse = await axios.get('/api/history');
-          setHistory(historyResponse.data);
+          const response = await axios.get('/api/animelist/get');
+          setAnimeList(response.data);
           setError(null);
         } catch (error) {
-          console.error('Error fetching history:', error);
-          setError('Failed to fetch history');
+          console.error('Error fetching anime list:', error);
+          setError('Failed to fetch anime list');
         } finally {
-          setLoadingHistory(false);
+          setLoadingAnimeList(false);
         }
       };
 
-      fetchHistory();
+      fetchAnimeList();
 
       if (session.user.role === 'moderator' || session.user.role === 'admin') {
         const fetchComments = async () => {
           setLoadingComments(true);
           try {
-            const commentsResponse = await axios.get('/api/mod/comments/pending');
-            setComments(commentsResponse.data);
+            const response = await axios.get('/api/mod/comments/pending');
+            setComments(response.data);
             setError(null);
           } catch (error) {
             console.error('Error fetching comments:', error);
@@ -50,6 +56,13 @@ const Dashboard = () => {
       }
     }
   }, [session]);
+
+  const nametolong = (name) => {
+    if (name.length > 25) {
+      return name.substring(0, 25) + '...';
+    }
+    return name;
+  };
 
   const handleApprove = async (commentId) => {
     try {
@@ -74,6 +87,46 @@ const Dashboard = () => {
     return `${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
   };
 
+  const capitalize = (text) => {
+    return text.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const removeAnime = async (animeId) => {
+    try {
+      await axios.delete('/api/animelist/delete', { data: { animeId } });
+      setAnimeList(animeList.filter(anime => anime.animeId !== animeId));
+      setOkMessage('Anime removed from your list.');
+    } catch (error) {
+      console.error('Failed to remove anime:', error);
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    router.push(`?tab=${tab}`, undefined, { shallow: true });
+  };
+
+  const openUpdateModal = (anime) => {
+    setSelectedAnime(anime);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateAnime = async (animeId, status) => {
+    try {
+      await axios.put('/api/animelist/update', {
+        animeId,
+        status,
+        lastWatchedAt: new Date(),
+      });
+      setAnimeList(animeList.map(anime => anime.animeId === animeId ? { ...anime, status } : anime));
+      setIsModalOpen(false);
+      setOkMessage('Anime status updated successfully.');
+    } catch (error) {
+      console.error('Failed to update anime status:', error);
+      setError('Failed to update anime status');
+    }
+  };
+
   if (status === 'loading') {
     return <p className="text-center text-gray-500">Loading...</p>;
   }
@@ -89,26 +142,26 @@ const Dashboard = () => {
 
         <div className="mb-6 flex justify-around">
           <button
-            onClick={() => setActiveTab('profile')}
+            onClick={() => handleTabChange('profile')}
             className={`py-2 px-4 ${activeTab === 'profile' ? 'text-yellow-500' : 'text-gray-400'}`}
           >
             Profile
           </button>
           <button
-            onClick={() => setActiveTab('history')}
-            className={`py-2 px-4 ${activeTab === 'history' ? 'text-yellow-500' : 'text-gray-400'}`}
+            onClick={() => handleTabChange('animelist')}
+            className={`py-2 px-4 ${activeTab === 'animelist' ? 'text-yellow-500' : 'text-gray-400'}`}
           >
             Anime List
           </button>
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => handleTabChange('settings')}
             className={`py-2 px-4 ${activeTab === 'settings' ? 'text-yellow-500' : 'text-gray-400'}`}
           >
             Settings
           </button>
           {(session.user.role === 'moderator' || session.user.role === 'admin') && (
             <button
-              onClick={() => setActiveTab('moderation')}
+              onClick={() => handleTabChange('moderation')}
               className={`py-2 px-4 ${activeTab === 'moderation' ? 'text-yellow-500' : 'text-gray-400'}`}
             >
               Moderation
@@ -126,30 +179,55 @@ const Dashboard = () => {
               height={64} 
             />
             <p className="text-xl sm:text-2xl">Name: <span className="font-bold">{session.user.name}</span></p>
-            <p className="text-xl sm:text-2xl">Email: <span className="font-bold">{session.user.email}</span></p>
             <p className="text-xl sm:text-2xl">ID: <span className="font-bold">{session.user.id}</span></p>
+            <p className="text-xl sm:text-2xl">Created At: <span className="font-bold">{formatDate(session.user.createdAt)}</span></p>
           </div>
         )}
 
-        {activeTab === 'history' && (
-          <div className="grid grid-cols-1 gap-4">
-            {loadingHistory ? (
-              <p className="text-xl sm:text-2xl text-center">Loading history...</p>
+        {activeTab === 'animelist' && (
+          <div className={`grid grid-cols-1 gap-4 ${animeList.length > 2 ? 'max-h-96 overflow-y-auto pr-4' : ''}`}>
+            {loadingAnimeList ? (
+              <p className="text-xl sm:text-2xl text-center">Loading anime list...</p>
             ) : error ? (
               <p className="text-xl sm:text-2xl text-center text-red-500">{error}</p>
-            ) : history.length === 0 ? (
-              <p className="text-xl sm:text-2xl text-center">No history available.</p>
+            ) : animeList.length === 0 ? (
+              <p className="text-xl sm:text-2xl text-center">No anime in your list.</p>
             ) : (
-              history.map((item, index) => (
-                <div key={index} className="bg-gray-700 p-4 rounded-lg">
-                  <p className="text-lg font-bold">Anime: {item.animeId}</p>
-                  <p>Episode: {item.episodeNumber}</p>
-                  <p>
-                    <Link href={`/anime/${item.animeId}`} className="text-blue-500 hover:text-blue-700">
-                      Watch Anime
-                    </Link>
-                  </p>
-                  <p>Watched: {formatDate(item.watchedAt)}</p>
+              animeList.map((item, index) => (
+                <div key={index} className="bg-gray-700 p-4 rounded-lg flex items-start">
+                  <div className="flex-shrink-0 w-32 h-48 mr-4">
+                    <Image 
+                      src={item.image} 
+                      alt={item.animeId} 
+                      width={128} 
+                      height={192} 
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
+                  <div className="flex-grow">
+                    <p className="text-lg font-bold truncate">{nametolong(item.name)}</p>
+                    <p>Status: {capitalize(item.status)}</p>
+                    <p>Last Time Watched: {formatDate(item.lastWatchedAt)}</p>
+                    <p>
+                      <Link href={`/anime/${item.animeId}`} className="text-blue-500 hover:text-blue-700">
+                        Watch Anime
+                      </Link>
+                    </p>
+                    <div className="flex space-x-4 mt-2">
+                      <button
+                        className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        onClick={() => openUpdateModal(item)}
+                      >
+                        Update
+                      </button>
+                      <button
+                        className="bg-red-500 text-gray-800 px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        onClick={() => removeAnime(item.animeId)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))
             )}
@@ -208,13 +286,32 @@ const Dashboard = () => {
           onClick={() => {
             signOut();
             localStorage.removeItem('profile');
-            localStorage.removeItem('history');
+            localStorage.removeItem('animelist');
           }}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 w-full mt-6"
         >
           Logout
         </button>
       </div>
+      {okMessage && ( 
+        <div className="fixed bottom-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg flex items-center">
+          <span>{okMessage}</span>
+          <button
+            onClick={() => setOkMessage('')}
+            className="ml-4 text-white font-bold"
+          >
+            &times;
+          </button>
+        </div>
+       )}
+      {isModalOpen && (
+        <UpdateToList
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          anime={selectedAnime}
+          onUpdate={handleUpdateAnime}
+        />
+      )}
     </div>
   );
 };
