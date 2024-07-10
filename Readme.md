@@ -35,10 +35,12 @@ CRYPTO_KEY=""
 CRYPTO_SECOND_KEY=""
 CRYPTO_IV=""
 REDIS_URL=""
-EMAIL_USER=""
-EMAIL_PASS=""
 AJAX_URL=""
 HEARTBEAT="" # Not required
+DISCORD_CLIENT_ID=""
+DISCORD_CLIENT_SECRET=""
+NEXTAUTH_URL=http://localhost:3000 #your domain
+NEXTAUTH_URL_INTERNAL=http://localhost:3000 #your domain
 ```
 
 4. Run `npm run dev` to start the development server

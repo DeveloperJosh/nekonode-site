@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import CustomDropdown from '@/components/CustomDropdown';
+import ReactPlayer from 'react-player';
 
 const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelectedServer, selectedServer }) => {
   const [sources, setSources] = useState({});
@@ -19,7 +20,7 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelect
           setLoading(false);
         } else {
           try {
-            const response = await axios.get(`https://player.nekonode.net/sources?anime_id=${episode.animeId}&episode=${episode.episodeNumber}`);
+            const response = await axios.get(`http://localhost:4000/sources?anime_id=${episode.animeId}&episode=${episode.episodeNumber}`);
             setSources(response.data);
             cache.current[cacheKey] = response.data; // Cache the response
             setLoading(false); // Stop loading when sources are fetched
@@ -59,7 +60,7 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelect
       const animeId = episode.animeId;
       const episodeNumber = episode.episodeNumber;
       const quality = source.quality;
-      setPlayerUrl(`https://player.nekonode.net/?anime_id=${animeId}&episode=${episodeNumber}&quality=${quality}&server=${selectedServer}`);
+      setPlayerUrl(`http://localhost:4000/?anime_id=${animeId}&episode=${episodeNumber}&quality=${quality}&server=${selectedServer}`);
     }
   }, [serverSources, selectedQuality, selectedServer, episode]);
 

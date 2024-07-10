@@ -14,7 +14,7 @@ const AnimeList = ({ animes }) => {
           <div className="relative pb-[140%] overflow-hidden rounded-lg mb-2"> {/* Adjusted padding-bottom for larger images */}
             <Image
               src={anime.image}
-              alt={anime.encodedName}
+              alt={anime.id}
               className="absolute inset-0 w-full h-full object-cover rounded-lg"
               width={300} 
               height={420}
