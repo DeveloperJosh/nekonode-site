@@ -24,6 +24,7 @@
     "next": "14.2.4",
     "next-auth": "^4.24.7",
     "node-cache": "^5.1.2",
+    "node-cron": "^3.0.3",
     "nodemailer": "^6.9.14",
     "react": "^18",
     "react-cookie-consent": "^9.0.0",
