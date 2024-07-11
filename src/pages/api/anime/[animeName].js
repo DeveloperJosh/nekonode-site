@@ -10,6 +10,10 @@ const baseUrl = process.env.BASE_URL;
 export default async function handler(req, res) {
   let { animeName } = req.query;
   let encodedAnimeName = encodeURIComponent(animeName);
+  // Reverse the list to replace longer numerals first
+  if (encodedAnimeName.includes('season-ii')) {
+    encodedAnimeName = encodedAnimeName.replace('season-ii', 'season-2');
+  }
 
   const cacheKey = `animeInfo_${encodedAnimeName}`;
 
@@ -20,6 +24,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    // if anime name has season-ii make it season-2
     const response = await axios.get(`${baseUrl}/category/${encodedAnimeName}`);
     const $ = load(response.data);
 
@@ -121,6 +126,7 @@ export default async function handler(req, res) {
     res.json(responseData);
   } catch (error) {
     console.error('Error retrieving anime info:', error);
+    console.log('Encoded anime name:', encodedAnimeName);
     res.status(500).json({ error: 'Failed to retrieve anime' });
   }
 }

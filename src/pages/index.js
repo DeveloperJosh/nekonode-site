@@ -5,6 +5,11 @@ import Timetable from '../components/Timetable';
 import TopAnimeList from '../components/TopAnimeList';
 import axios from 'axios';
 import { getNewsPosts } from '../lib/news';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const api = process.env.NEXTAUTH_URL;
 
 const HomePage = ({ initialLatestAnime, topAnime, initialPage, newsPosts }) => {
   const [latestAnime, setLatestAnime] = useState(initialLatestAnime);
@@ -67,10 +72,10 @@ export async function getServerSideProps({ query }) {
 
   try {
     const [latestResponse, topAnimeResponse] = await Promise.all([
-      axios.get('http://localhost:3000/api/latest', {
+      axios.get(`${api}/api/latest`, {
         params: { page: initialPage, limit: 12 },
       }),
-      axios.get('http://localhost:3000/api/top10'),
+      axios.get(`${api}/api/top10`),
     ]);
 
     return {

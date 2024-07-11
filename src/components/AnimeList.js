@@ -3,7 +3,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const AnimeList = ({ animes }) => {
-  const displayedAnimes = animes.slice(0, 20); 
+  // Filter out animes with episode number 0
+  const filteredAnimes = animes.filter(anime => anime.episodeNumber !== 0);
+  const displayedAnimes = filteredAnimes.slice(0, 20); 
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-5 gap-2"> {/* Adjusted grid columns and gap */}
@@ -12,7 +14,7 @@ const AnimeList = ({ animes }) => {
           <div className="relative pb-[140%] overflow-hidden rounded-lg mb-2"> {/* Adjusted padding-bottom for larger images */}
             <Image
               src={anime.image}
-              alt={anime.encodedName}
+              alt={anime.id}
               className="absolute inset-0 w-full h-full object-cover rounded-lg"
               width={300} 
               height={420}

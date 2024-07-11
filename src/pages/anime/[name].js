@@ -8,92 +8,84 @@ import EpisodePlayer from '@/components/EpisodePlayer';
 import { useSession } from 'next-auth/react';
 import Comments from '@/components/Comments';
 import CommentForm from '@/components/CommentForm';
+import AddToListModal from '@/components/AddToListModal';
 
 const api = "/api"; // Use the relative path for Next.js API
 const fetcher = url => axios.get(url).then(res => res.data);
 
 const AnimePage = () => {
   const router = useRouter();
-  const { name, ep } = router.query; // Extract the 'ep' parameter from the query
-  const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher);
-  const { data: session, status } = useSession(); // Fetch the session
+  const { name, ep } = router.query; 
+  const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher, {
+    revalidateOnFocus: false, 
+    dedupingInterval: 60000, 
+  });
+  const { data: session } = useSession();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
-  const [episodeSources, setEpisodeSources] = useState({});
   const [selectedQuality, setSelectedQuality] = useState('1080p');
-  const [selectedServer, setSelectedServer] = useState('gogocdn'); 
+  const [selectedServer, setSelectedServer] = useState('gogocdn');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [okMessage, setOkMessage] = useState('');
 
-  const fetchEpisodeDetails = useCallback(async (episodeNumber) => {
-    if (!name) return;
-
+  const fetchEpisodeDetails = useCallback((episodeNumber) => {
     const episodeId = `${name}-episode-${episodeNumber}`;
-    setSelectedEpisode({ episodeNumber, episodeId, sources: null });
-
-    if (!episodeSources[episodeId] || episodeSources[episodeId].server !== selectedServer) { // Check for server
-      try {
-        const response = await axios.get(`${api}/watch/${episodeId}?server=${selectedServer}`); // Include server in API request
-        const sources = response.data;
-        setEpisodeSources(prevState => ({ ...prevState, [episodeId]: { sources, server: selectedServer } })); // Store server with sources
-        const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
-        setSelectedQuality(defaultQuality);
-        setSelectedEpisode(prevState => ({ ...prevState, sources }));
-      } catch (error) {
-        console.error('Error fetching episode sources:', error);
-      }
-    } else {
-      setSelectedEpisode(prevState => ({ ...prevState, sources: episodeSources[episodeId].sources }));
-      if (!episodeSources[episodeId].sources.some(source => source.quality === selectedQuality)) {
-        setSelectedQuality(episodeSources[episodeId].sources[0].quality);
-      }
-    }
-  }, [name, selectedServer, episodeSources, selectedQuality]);
-
-  const playByAnimeName = useCallback(async (animeName) => {
-    if (!animeName) return;
-
-    try {
-      const response = await axios.get(`${api}/watch/${animeName}`);
-      const sources = response.data;
-      setEpisodeSources(prevState => ({ ...prevState, [animeName]: { sources, server: selectedServer } }));
-      const defaultQuality = sources.find(source => source.quality === '1080p') ? '1080p' : sources[0].quality;
-      setSelectedQuality(defaultQuality);
-      setSelectedEpisode({ episodeNumber: 0, episodeId: animeName, sources });
-    } catch (error) {
-      console.error('Error fetching anime sources:', error);
-    }
-  }, [selectedServer]);
+    setSelectedEpisode({
+      episodeNumber,
+      episodeId,
+      animeId: name,
+      sources: [{ quality: selectedQuality }]
+    });
+  }, [name, selectedQuality]);
 
   useEffect(() => {
     if (name && animeData) {
       const firstEpisode = animeData.episodes[0]?.episodeNumber;
       const episodeToPlay = ep ? parseInt(ep, 10) : firstEpisode;
-      if (episodeToPlay === 0) {
-        playByAnimeName(name); // Play the anime by its name if episode is 0
-      } else {
-        fetchEpisodeDetails(episodeToPlay);
-      }
+      fetchEpisodeDetails(episodeToPlay);
     }
-  }, [name, ep, selectedServer, animeData, fetchEpisodeDetails, playByAnimeName]);
+  }, [name, ep, animeData, fetchEpisodeDetails]);
 
   const handleEpisodeSelect = episodeNumber => {
     const episodeNum = parseInt(episodeNumber, 10); // Convert to number
-    if (episodeNum === 0) {
-      router.push({
-        pathname: `/anime/${name}`,
-        query: { ep: 0 }
-      }, undefined, { shallow: true });
-      playByAnimeName(name);
-    } else {
-      router.push({
-        pathname: `/anime/${name}`,
-        query: { ep: episodeNum }
-      }, undefined, { shallow: true });
-      fetchEpisodeDetails(episodeNum);
-    }
+    router.push({
+      pathname: `/anime/${name}`,
+      query: { ep: episodeNum }
+    }, undefined, { shallow: true });
+    fetchEpisodeDetails(episodeNum);
   };
 
   const handlePageChange = (direction) => {
     setCurrentPage(prev => prev + direction);
+  };
+
+  const handleAddToAnimeList = async ({ status }) => {
+    if (session) {
+      try {
+        // deurl the name so it looks normal
+        const deurl = decodeURIComponent(name);
+        let anime_name = deurl.replace(/-/g, ' ');
+        // uppercase the first letter of each word
+        anime_name = anime_name.replace(/\b\w/g, l => l.toUpperCase ());
+        const response = await axios.post(`${api}/animelist/add`, {
+          name: anime_name,
+          animeId: name,
+          image: animeData.animeInfo.image, // Use animeData to get animeInfo.image
+          status,
+          lastWatchedAt: new Date(),
+        });
+        if (response.status === 200) {
+          //console.log('Anime added to your list successfully!');
+          //setErrorMessage('Anime added to your list successfully!');
+          setOkMessage('Anime added to your list successfully!');
+        }
+      } catch (error) {
+        setErrorMessage('Failed to add anime to your list');
+      }
+    } else {
+      setErrorMessage('You need to be logged in to add an anime to your list');
+    }
   };
 
   if (!animeData && !error) {
@@ -178,33 +170,68 @@ const AnimePage = () => {
                 />
               </div>
               <br />
-              <AnimeDetails animeInfo={animeInfo} />
+              <AnimeDetails animeInfo={animeInfo} onAddToListClick={() => setIsModalOpen(true)} isAuthenticated={!!session} />
               <Comments animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />
-              {status === 'authenticated' && <CommentForm animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />}
+              {session && <CommentForm animeId={name} episodeNumber={selectedEpisode ? selectedEpisode.episodeNumber : null} />}
             </main>
           </div>
         </div>
+        {errorMessage && (
+          <div className="fixed bottom-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-lg flex items-center">
+            <span>{errorMessage}</span>
+            <button
+              onClick={() => setErrorMessage('')}
+              className="ml-4 text-white font-bold"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+       {okMessage && ( 
+        <div className="fixed bottom-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg flex items-center">
+          <span>{okMessage}</span>
+          <button
+            onClick={() => setOkMessage('')}
+            className="ml-4 text-white font-bold"
+          >
+            &times;
+          </button>
+        </div>
+       )}
       </div>
+      <AddToListModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddToAnimeList}
+      />
     </>
   );
 };
 
-const AnimeDetails = ({ animeInfo }) => (
+const AnimeDetails = ({ animeInfo, onAddToListClick, isAuthenticated }) => (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col md:flex-row items-center">
     <ImageWrapper image={animeInfo.image} title={animeInfo.title} />
-    <div className="text-gray-300">
+    <div className="text-gray-300 mt-4 md:mt-0 md:ml-4">
       <h1 className="text-4xl font-bold text-left mb-4 text-yellow-500">{animeInfo.title}</h1>
       <p className="mb-4"><span className="font-semibold">Description:</span> {animeInfo.description}</p>
       <p className="mb-2"><span className="font-semibold">Status:</span> {animeInfo.status}</p>
       <p className="mb-2"><span className="font-semibold">Genres:</span> {animeInfo.genres.join(', ')}</p>
       <p className="mb-2"><span className="font-semibold">Released:</span> {animeInfo.released}</p>
       <p className="mb-2"><span className="font-semibold">Total Episodes:</span> {animeInfo.totalEpisodes}</p>
+      {isAuthenticated && (
+        <button
+          onClick={onAddToListClick}
+          className="mt-2 bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600"
+        >
+          Add to My List
+        </button>
+      )}
     </div>
   </div>
 );
 
 const ImageWrapper = ({ image, title }) => (
-  <div className="relative w-48 h-64 mb-6 md:mb-0 md:mr-6 flex-shrink-0">
+  <div className="relative w-48 h-64 flex-shrink-0">
     <Image src={image} alt={title} layout="fill" objectFit="cover" className="rounded-lg shadow-lg" placeholder="blur" blurDataURL="/placeholder.jpg" />
   </div>
 );

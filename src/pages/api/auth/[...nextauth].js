@@ -14,17 +14,19 @@ export const authOptions = {
     async session({ session, token }) {
       await dbConnect();
       const user = await User.findById(token.id);
-      
+
       if (user) {
         session.user.id = user._id;
         session.user.role = user.role;
+        session.user.createdAt = user.createdAt;
+        session.user.updatedAt = user.updatedAt;
         session.user.banned = user.banned;
         session.accessToken = token.accessToken;
       } else {
         session.user.role = null;
         session.user.banned = null;
       }
-      
+
       return session;
     },
     async jwt({ token, user, account }) {
@@ -42,16 +44,23 @@ export const authOptions = {
       let existingUser = await User.findOne({ email: user.email });
 
       if (!existingUser) {
-        existingUser = await User.create({
-          _id: user.id,
-          userId: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          role: 'user',
-          banned: false,
-          //animelist: [],
-        });
+        try {
+          existingUser = await User.create({
+            _id: user.id,
+            userId: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            role: 'user',
+            banned: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+          console.log('User created:', existingUser);
+        } catch (error) {
+          console.error('Error creating user:', error);
+          return false;
+        }
       }
 
       if (existingUser.banned) {
