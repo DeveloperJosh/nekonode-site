@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
 import dotenv from 'dotenv';
+import cron from 'node-cron';
 
 dotenv.config();
 
@@ -16,6 +17,17 @@ if (typeof window === 'undefined') {
 
   client.connect();
 }
+
+// clear cache
+export const clearCache = async () => {
+  if (!client) return; // Ensure client is available
+  try {
+    await client.flushAll();
+    console.log('Cache cleared.');
+  } catch (err) {
+    console.error('Error clearing cache:', err);
+  }
+};
 
 export const getCache = async (key) => {
   if (!client) return null; // Ensure client is available
@@ -36,3 +48,13 @@ export const setCache = async (key, value, ttl = 3600) => {
     console.error('Error setting cache:', err);
   }
 };
+
+// Schedule cache clearing every hour
+cron.schedule('0 * * * *', async () => {
+  console.log('Clearing cache...');
+  try {
+    await clearCache();
+  } catch (err) {
+    console.error('Error during scheduled cache clear:', err);
+  }
+});
