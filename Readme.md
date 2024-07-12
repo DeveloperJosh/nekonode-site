@@ -4,7 +4,7 @@ NekoNode
 
 <p align="center">
   <a href="https://nekonode.net" target="_blank">
-    <img src="https://raw.githubusercontent.com/DeveloperJosh/nekonode-site/master/public/favicon.ico" alt="Logo" width="200"/>
+    <img src="https://raw.githubusercontent.com/DeveloperJosh/nekonode-site/master/public/logo.png" alt="Logo" width="200"/>
   </a>
 </p>
 
