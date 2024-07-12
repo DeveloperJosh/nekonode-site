@@ -56,6 +56,14 @@ Enjoy your favorite shows with English subs or dubs, and download individual epi
 - At least 2 CPU Cores
 - At least 1GB of Storage
 
+## Local Development
+
+> **⚠️ Caution**
+>
+> If you want to self host this app, please note that it's only allowed for personal use.
+> **Commercial use is not recommended.**
+
+
 ## Installation
 
 1. Clone the repository
