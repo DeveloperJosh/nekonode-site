@@ -102,14 +102,14 @@ If you find a bug or have a feature request, please open an issue on the [NekoNo
 Got questions, suggestions, or just wanna say hi? Drop us a line at <a href="mailto:blue@blue-dev.xyz">Blue@blue-dev.xyz</a>. You can also hang out with us on Discord.
 
 - Visit our website at **[NekoNode](https://nekonode.net)**
-- Join our **[Discord](https://discord.gg/nekonode)**
+- Join our **[Discord](https://discord.gg/88ArBFRcY8)**
 ## Support & Contributions
 
 If you would like to support or contribute to this project, feel free to star the [GitHub repository](https://github.com/DeveloperJosh/nekonode-site).
 
 ## License 📝
 
-This project is governed by a Custom BY-NC License. What does this entail? Simply put, you are permitted to utilize, distribute, and modify the code for non-commercial purposes. However, it is imperative that due credit is accorded to our platform, [nekonode.net](https://nekonode.net). Any commercial utilization of this code is strictly prohibited. For comprehensive details, please refer to the [LICENSE](https://github.com/DeveloperJosh/nekonode-site/blob/master/LICENSE) file. Should you have inquiries or require special permissions, do not hesitate to contact us.
+This project is licensed under the [MIT License](https://github.com/DeveloperJosh/nekonode-site/blob/master/LICENSE), I would appreciate it if you could include a link to the original repository.
 
 ## Found a Bug? 🐞
 
