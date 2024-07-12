@@ -39,7 +39,7 @@ Welcome to **NekoNode** - your ultimate anime destination! Explore **[nekonode.n
 
 Crafted using **Next.js** and **Tailwind CSS**, our site offers a modern and responsive interface. Enjoy fast performance and smooth navigation as you explore a vast collection of HD anime titles.
 
-Enjoy your favorite shows with English subs or dubs, and download individual episodes hassle-free, no sign-up required!
+Enjoy your favorite shows with English subs or dubs hassle-free, no sign-up required!
 
 ## Requirements
 
