@@ -48,7 +48,8 @@ Enjoy your favorite shows with English subs or dubs hassle-free, no sign-up requ
 - [MongoDB](https://www.mongodb.com/): for storing the user data.
 - [Hostinger](https://www.hostinger.com/): for the email service.
 - [CryptoJS](https://cryptojs.gitbook.io/docs/): for encrypting the user data. Add keys to your .env file.
-- GogoCDN: Good luck with that one.
+- [Player](https://github.com/DeveloperJosh/player-nekonode-site): for streaming the videos.
+- GogoCDN: For fetching the video links. Add the URL to your .env file.
 
 ## System Requirements
 
