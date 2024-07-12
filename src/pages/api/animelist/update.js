@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
 
   if (!session) {
-    console.log('Unauthorized access attempt');
+    //console.log('Unauthorized access attempt');
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

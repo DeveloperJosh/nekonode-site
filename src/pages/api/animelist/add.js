@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST' || req.method === 'PUT') {
     try {
       const { name, animeId, image, status, lastWatchedAt } = req.body;
-      console.log(`Received request to ${req.method === 'POST' ? 'add' : 'update'} anime:`, { animeId, status, lastWatchedAt });
+      //console.log(`Received request to ${req.method === 'POST' ? 'add' : 'update'} anime:`, { animeId, status, lastWatchedAt });
 
       const user = await User.findOne({ userId: session.user.id });
 
