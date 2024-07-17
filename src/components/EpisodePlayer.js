@@ -6,7 +6,6 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
   const [loading, setLoading] = useState(true);
   const [playerUrl, setPlayerUrl] = useState('');
   const [episodeLoaded, setEpisodeLoaded] = useState(false);
-  const [prefetchedEpisode, setPrefetchedEpisode] = useState(null);
 
   useEffect(() => {
     if (!episode || !episode.episodeId) {
@@ -20,7 +19,6 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
     setLoading(true);
     setEpisodeLoaded(false);
 
-    // Simulate episode loading
     const timer = setTimeout(() => {
       setEpisodeLoaded(true);
     }, 1000); // Simulate 1-second episode loading time
@@ -31,23 +29,11 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
   useEffect(() => {
     if (episodeLoaded) {
       console.log('Setting player URL');
-      const url = `https::/player.nekonode.net/?anime_id=${episode.nextEpisodeId}&server=${selectedServer}`;
-      if (playerUrl !== url) {
-        setPlayerUrl(url);
-      }
+      const url = `https://player.nekonode.net/?anime_id=${episode.episodeId}&server=${selectedServer}`;
+      setPlayerUrl(url);
       setLoading(false);
     }
-  }, [episodeLoaded, selectedServer, episode, playerUrl]);
-
-  useEffect(() => {
-    // Pre-fetch the next episode data (example implementation)
-    if (episode && episode.nextEpisodeId) {
-      fetch(`https::/player.nekonode.net/?anime_id=${episode.nextEpisodeId}&server=${selectedServer}`)
-        .then(response => response.json())
-        .then(data => setPrefetchedEpisode(data))
-        .catch(error => console.error('Error pre-fetching next episode:', error));
-    }
-  }, [episode]);
+  }, [episodeLoaded, selectedServer, episode]);
 
   const handleIframeLoad = () => {
     console.log('Iframe loaded');
@@ -84,11 +70,6 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
       </div>
       <div className="flex justify-center mt-4 space-x-4">
         <p className="font-bold">Select Server:</p>
-      </div>
-      <div className="flex justify-center mt-4 space-x-4">
-        <p className="font-bold text-sm">If one server isn&apos;t working, try the next</p>
-      </div>
-      <div className="flex justify-center mt-4 space-x-4">
         <button
           onClick={() => setSelectedServer('gogocdn')}
           className={`px-4 py-2 mx-2 rounded ${selectedServer === 'gogocdn' ? 'bg-yellow-500 text-gray-800' : 'bg-gray-700 text-gray-300'}`}
@@ -101,6 +82,9 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
         >
           StreamWish
         </button>
+      </div>
+      <div className="flex justify-center mt-4 space-x-4">
+        <p className="font-bold text-sm">If one server isn&apos;t working, try the next</p>
       </div>
     </div>
   );
