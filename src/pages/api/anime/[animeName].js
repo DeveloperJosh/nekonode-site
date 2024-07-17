@@ -53,12 +53,18 @@ export default async function handler(req, res) {
       const episodeTitle = $api(element).find('.name').text().trim();
       const episodeNumberMatch = episodeTitle.match(/EP (\d+)/i);
       const episodeNumber = episodeNumberMatch ? parseInt(episodeNumberMatch[1], 10) : null;
+      
+      // Remove / from id and trailing hyphen
+      let id = episodeUrl.trim();
+      id = id.replace(/\//g, '')//.replace(/-episode-\d+/, '').replace(/-$/, '');
+      // rmove the last hyphen
 
       if (episodeUrl && episodeTitle) {
         episodes.push({
           episodeNumber,
           title: episodeTitle,
-          url: `https://gogoanime3.co${episodeUrl.trim()}`,
+          id: id,
+          url: `https://gogoanime3.co${episodeUrl.trim()}`
         });
       }
     });

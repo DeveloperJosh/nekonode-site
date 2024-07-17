@@ -15,10 +15,10 @@ const fetcher = url => axios.get(url).then(res => res.data);
 
 const AnimePage = () => {
   const router = useRouter();
-  const { name, ep } = router.query; 
+  const { name, ep } = router.query;
   const { data: animeData, error } = useSWR(name ? `${api}/anime/${name}` : null, fetcher, {
-    revalidateOnFocus: false, 
-    dedupingInterval: 60000, 
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
   });
   const { data: session } = useSession();
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,11 +29,12 @@ const AnimePage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [okMessage, setOkMessage] = useState('');
 
-  const fetchEpisodeDetails = useCallback((episodeNumber) => {
-    const episodeId = `${name}-episode-${episodeNumber}`;
+  const fetchEpisodeDetails = useCallback((episode) => {
+    const { episodeNumber, id } = episode;
+    console.log('Fetching episode details:', episode);
     setSelectedEpisode({
       episodeNumber,
-      episodeId,
+      episodeId: id,
       animeId: name,
       sources: [{ quality: selectedQuality }]
     });
@@ -41,19 +42,19 @@ const AnimePage = () => {
 
   useEffect(() => {
     if (name && animeData) {
-      const firstEpisode = animeData.episodes[0]?.episodeNumber;
-      const episodeToPlay = ep ? parseInt(ep, 10) : firstEpisode;
+      const firstEpisode = animeData.episodes[0];
+      const episodeToPlay = ep ? animeData.episodes.find(e => e.episodeNumber === parseInt(ep, 10)) : firstEpisode;
       fetchEpisodeDetails(episodeToPlay);
     }
   }, [name, ep, animeData, fetchEpisodeDetails]);
 
   const handleEpisodeSelect = episodeNumber => {
-    const episodeNum = parseInt(episodeNumber, 10); // Convert to number
+    const episode = animeData.episodes.find(e => e.episodeNumber === parseInt(episodeNumber, 10));
     router.push({
       pathname: `/anime/${name}`,
-      query: { ep: episodeNum }
+      query: { ep: episodeNumber }
     }, undefined, { shallow: true });
-    fetchEpisodeDetails(episodeNum);
+    fetchEpisodeDetails(episode);
   };
 
   const handlePageChange = (direction) => {
@@ -63,21 +64,17 @@ const AnimePage = () => {
   const handleAddToAnimeList = async ({ status }) => {
     if (session) {
       try {
-        // deurl the name so it looks normal
         const deurl = decodeURIComponent(name);
         let anime_name = deurl.replace(/-/g, ' ');
-        // uppercase the first letter of each word
-        anime_name = anime_name.replace(/\b\w/g, l => l.toUpperCase ());
+        anime_name = anime_name.replace(/\b\w/g, l => l.toUpperCase());
         const response = await axios.post(`${api}/animelist/add`, {
           name: anime_name,
           animeId: name,
-          image: animeData.animeInfo.image, // Use animeData to get animeInfo.image
+          image: animeData.animeInfo.image,
           status,
           lastWatchedAt: new Date(),
         });
         if (response.status === 200) {
-          //console.log('Anime added to your list successfully!');
-          //setErrorMessage('Anime added to your list successfully!');
           setOkMessage('Anime added to your list successfully!');
         }
       } catch (error) {
@@ -107,12 +104,12 @@ const AnimePage = () => {
   const currentEpisodes = episodes.slice((currentPage - 1) * episodesPerPage, currentPage * episodesPerPage);
 
   const episodeButtons = currentEpisodes.map(episode => (
-    <li key={episode.episodeNumber} className="mb-2">
+    <li key={`${episode.id}-${episode.episodeNumber}`} className="mb-2">
       <button
         className={`w-full text-left px-4 py-2 rounded ${selectedEpisode && selectedEpisode.episodeNumber === episode.episodeNumber ? 'bg-gray-700 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}
         onClick={() => handleEpisodeSelect(episode.episodeNumber)}
       >
-        {`EP ${episode.episodeNumber}`}
+        {episode.title}
       </button>
     </li>
   ));
@@ -138,8 +135,8 @@ const AnimePage = () => {
                     onChange={(e) => handleEpisodeSelect(parseInt(e.target.value, 10))}
                   >
                     {currentEpisodes.map(episode => (
-                      <option key={episode.episodeNumber} value={episode.episodeNumber}>
-                        {`EP ${episode.episodeNumber}`}
+                      <option key={`${episode.id}-${episode.episodeNumber}`} value={episode.episodeNumber}>
+                        {episode.title}
                       </option>
                     ))}
                   </select>
@@ -232,7 +229,16 @@ const AnimeDetails = ({ animeInfo, onAddToListClick, isAuthenticated }) => (
 
 const ImageWrapper = ({ image, title }) => (
   <div className="relative w-48 h-64 flex-shrink-0">
-    <Image src={image} alt={title} layout="fill" objectFit="cover" className="rounded-lg shadow-lg" placeholder="blur" blurDataURL="/placeholder.jpg" />
+    <Image
+      src={image}
+      alt={title}
+      fill
+      sizes="100vw"
+      style={{ objectFit: 'cover' }}
+      className="rounded-lg shadow-lg"
+      placeholder="blur"
+      blurDataURL="/placeholder.jpg"
+    />
   </div>
 );
 

@@ -137,32 +137,32 @@ const Dashboard = () => {
 
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center text-gray-200">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 className="text-2xl sm:text-4xl font-bold text-yellow-500 mb-6 text-center">Your Dashboard</h2>
+      <div className="bg-gray-800 p-4 sm:p-8 rounded-lg shadow-lg w-full max-w-lg">
+        <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-yellow-500 mb-4 sm:mb-6 text-center">Your Dashboard</h2>
 
-        <div className="mb-6 flex justify-around">
+        <div className="mb-4 sm:mb-6 flex justify-around">
           <button
             onClick={() => handleTabChange('profile')}
-            className={`py-2 px-4 ${activeTab === 'profile' ? 'text-yellow-500' : 'text-gray-400'}`}
+            className={`py-2 px-2 sm:px-4 ${activeTab === 'profile' ? 'text-yellow-500' : 'text-gray-400'}`}
           >
             Profile
           </button>
           <button
             onClick={() => handleTabChange('animelist')}
-            className={`py-2 px-4 ${activeTab === 'animelist' ? 'text-yellow-500' : 'text-gray-400'}`}
+            className={`py-2 px-2 sm:px-4 ${activeTab === 'animelist' ? 'text-yellow-500' : 'text-gray-400'}`}
           >
             Anime List
           </button>
           <button
             onClick={() => handleTabChange('settings')}
-            className={`py-2 px-4 ${activeTab === 'settings' ? 'text-yellow-500' : 'text-gray-400'}`}
+            className={`py-2 px-2 sm:px-4 ${activeTab === 'settings' ? 'text-yellow-500' : 'text-gray-400'}`}
           >
             Settings
           </button>
           {(session.user.role === 'moderator' || session.user.role === 'admin') && (
             <button
               onClick={() => handleTabChange('moderation')}
-              className={`py-2 px-4 ${activeTab === 'moderation' ? 'text-yellow-500' : 'text-gray-400'}`}
+              className={`py-2 px-2 sm:px-4 ${activeTab === 'moderation' ? 'text-yellow-500' : 'text-gray-400'}`}
             >
               Moderation
             </button>
@@ -174,28 +174,28 @@ const Dashboard = () => {
             <Image 
               src={session.user.image} 
               alt={session.user.name} 
-              className="w-16 h-16 rounded-full mx-auto mb-4" 
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full mx-auto mb-4" 
               width={64} 
               height={64} 
             />
-            <p className="text-xl sm:text-2xl">Name: <span className="font-bold">{session.user.name}</span></p>
-            <p className="text-xl sm:text-2xl">ID: <span className="font-bold">{session.user.id}</span></p>
-            <p className="text-xl sm:text-2xl">Created At: <span className="font-bold">{formatDate(session.user.createdAt)}</span></p>
+            <p className="text-lg sm:text-xl">Name: <span className="font-bold">{session.user.name}</span></p>
+            <p className="text-lg sm:text-xl">ID: <span className="font-bold">{session.user.id}</span></p>
+            <p className="text-lg sm:text-xl">Created At: <span className="font-bold">{formatDate(session.user.createdAt)}</span></p>
           </div>
         )}
 
         {activeTab === 'animelist' && (
           <div className={`grid grid-cols-1 gap-4 ${animeList.length > 2 ? 'max-h-96 overflow-y-auto pr-4' : ''}`}>
             {loadingAnimeList ? (
-              <p className="text-xl sm:text-2xl text-center">Loading anime list...</p>
+              <p className="text-lg sm:text-xl text-center">Loading anime list...</p>
             ) : error ? (
-              <p className="text-xl sm:text-2xl text-center text-red-500">{error}</p>
+              <p className="text-lg sm:text-xl text-center text-red-500">{error}</p>
             ) : animeList.length === 0 ? (
-              <p className="text-xl sm:text-2xl text-center">No anime in your list.</p>
+              <p className="text-lg sm:text-xl text-center">No anime in your list.</p>
             ) : (
               animeList.map((item, index) => (
-                <div key={index} className="bg-gray-700 p-4 rounded-lg flex items-start">
-                  <div className="flex-shrink-0 w-32 h-48 mr-4">
+                <div key={index} className="bg-gray-700 p-4 rounded-lg flex flex-col sm:flex-row items-center sm:items-start">
+                  <div className="flex-shrink-0 w-24 h-36 sm:w-32 sm:h-48 mr-0 sm:mr-4 mb-4 sm:mb-0">
                     <Image 
                       src={item.image} 
                       alt={item.animeId} 
@@ -205,23 +205,23 @@ const Dashboard = () => {
                     />
                   </div>
                   <div className="flex-grow">
-                    <p className="text-lg font-bold truncate">{nametolong(item.name)}</p>
-                    <p>Status: {capitalize(item.status)}</p>
-                    <p>Last Time Watched: {formatDate(item.lastWatchedAt)}</p>
+                    <p className="text-md sm:text-lg font-bold truncate">{nametolong(item.name)}</p>
+                    <p className="text-sm sm:text-md">Status: {capitalize(item.status)}</p>
+                    <p className="text-sm sm:text-md">Last Time Watched: {formatDate(item.lastWatchedAt)}</p>
                     <p>
                       <Link href={`/anime/${item.animeId}`} className="text-blue-500 hover:text-blue-700">
                         Watch Anime
                       </Link>
                     </p>
-                    <div className="flex space-x-4 mt-2">
+                    <div className="flex space-x-2 sm:space-x-4 mt-2">
                       <button
-                        className="bg-yellow-500 text-gray-800 px-4 py-2 rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        className="bg-yellow-500 text-gray-800 px-2 sm:px-4 py-2 rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         onClick={() => openUpdateModal(item)}
                       >
                         Update
                       </button>
                       <button
-                        className="bg-red-500 text-gray-800 px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="bg-red-500 text-gray-800 px-2 sm:px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                         onClick={() => removeAnime(item.animeId)}
                       >
                         Remove
@@ -236,18 +236,18 @@ const Dashboard = () => {
 
         {activeTab === 'settings' && (
           <div className="text-center">
-            <p className="text-xl sm:text-2xl">User settings panel here</p>
+            <p className="text-lg sm:text-xl">User settings panel here</p>
           </div>
         )}
 
         {activeTab === 'moderation' && (session.user.role === 'moderator' || session.user.role === 'admin') && (
           <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto pr-4"> {/* Added padding-right */}
             {loadingComments ? (
-              <p className="text-xl sm:text-2xl text-center">Loading comments...</p>
+              <p className="text-lg sm:text-xl text-center">Loading comments...</p>
             ) : error ? (
-              <p className="text-xl sm:text-2xl text-center text-red-500">{error}</p>
+              <p className="text-lg sm:text-xl text-center text-red-500">{error}</p>
             ) : comments.length === 0 ? (
-              <p className="text-xl sm:text-2xl text-center">No pending comments available.</p>
+              <p className="text-lg sm:text-xl text-center">No pending comments available.</p>
             ) : (
               comments.map((comment) => (
                 <div key={comment._id} className="bg-gray-700 p-4 rounded-lg">
@@ -255,23 +255,23 @@ const Dashboard = () => {
                     <Image 
                       src={comment.user.image} 
                       alt={comment.user.name} 
-                      className="w-10 h-10 rounded-full mr-2" 
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2" 
                       width={40} 
                       height={40} 
                     />
                     <span className="font-semibold">{comment.user.name} | {comment.animeId}-episode-{comment.episodeNumber}</span>
                   </div>
                   <p>{comment.text}</p>
-                  <div className="flex space-x-4 mt-2">
+                  <div className="flex space-x-2 sm:space-x-4 mt-2">
                     <button
                       onClick={() => handleApprove(comment._id)}
-                      className="bg-green-500 text-gray-800 px-4 py-2 rounded hover:bg-green-600"
+                      className="bg-green-500 text-gray-800 px-2 sm:px-4 py-2 rounded hover:bg-green-600"
                     >
                       Approve
                     </button>
                     <button
                       onClick={() => handleReject(comment._id)}
-                      className="bg-red-500 text-gray-800 px-4 py-2 rounded hover:bg-red-600"
+                      className="bg-red-500 text-gray-800 px-2 sm:px-4 py-2 rounded hover:bg-red-600"
                     >
                       Reject
                     </button>

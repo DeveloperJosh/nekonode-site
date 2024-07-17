@@ -58,16 +58,19 @@ const SearchResults = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {results.length > 0 ? (
-            results.map((anime) => (
+            results.map((anime, index) => (
               <Link href={`/anime/${encodeURIComponent(anime.id)}`} key={anime.id} legacyBehavior>
                 <a className="block bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition">
                   <div className="relative w-full pb-[150%] mb-4">
                     <Image
                       src={anime.image}
                       alt={anime.title}
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="rounded-lg"
+                      priority={index < 4} 
+                      placeholder="blur"
+                      blurDataURL="placeholder.jpg"
                     />
                   </div>
                   <h2 className="text-xl font-bold text-yellow-500 mb-2">{anime.title}</h2>

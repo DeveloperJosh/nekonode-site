@@ -1,70 +1,56 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import axios from 'axios';
-import CustomDropdown from '@/components/CustomDropdown';
-import ReactPlayer from 'react-player';
+// EpisodePlayer.jsx
+import React, { useState, useEffect } from 'react';
+import ReactIframe from 'react-iframe';
 
-const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelectedServer, selectedServer }) => {
-  const [sources, setSources] = useState({});
+const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
   const [loading, setLoading] = useState(true);
   const [playerUrl, setPlayerUrl] = useState('');
-  const iframeRef = useRef(null);
-  const cache = useRef({});
+  const [episodeLoaded, setEpisodeLoaded] = useState(false);
+  const [prefetchedEpisode, setPrefetchedEpisode] = useState(null);
 
   useEffect(() => {
-    if (episode && episode.animeId && episode.episodeNumber) {
-      const fetchSources = async () => {
-        setLoading(true); // Start loading when fetching sources
-        const cacheKey = `${episode.animeId}-${episode.episodeNumber}`;
-        if (cache.current[cacheKey]) {
-          setSources(cache.current[cacheKey]);
-          setLoading(false);
-        } else {
-          try {
-            const response = await axios.get(`https://player.nekonode.net/sources?anime_id=${episode.animeId}&episode=${episode.episodeNumber}`);
-            setSources(response.data);
-            cache.current[cacheKey] = response.data; // Cache the response
-            setLoading(false); // Stop loading when sources are fetched
-          } catch (error) {
-            console.error('Error fetching sources:', error);
-            setSources({});
-            setLoading(false); // Stop loading even if there is an error
-          }
-        }
-      };
-
-      fetchSources();
-    }
-  }, [episode]);
-
-  const serverSources = useMemo(() => (Array.isArray(sources[selectedServer]) ? sources[selectedServer] : []), [sources, selectedServer]);
-
-  useEffect(() => {
-    if (!episode || !episode.animeId || !episode.episodeNumber || serverSources.length === 0) {
+    if (!episode || !episode.episodeId) {
+      console.log('No episode or episode ID available');
       setPlayerUrl('');
+      setLoading(false);
       return;
     }
 
-    let source = serverSources.find(source => source.quality === selectedQuality);
-    if (!source) {
-      if (selectedServer === 'gogocdn') {
-        source = serverSources.find(source => source.quality === 'backup') || serverSources[0];
-      } else if (selectedServer === 'streamwish') {
-        source = serverSources.find(source => source.quality === 'default') || serverSources[0];
-      }
-    }
+    console.log('Loading new episode...');
+    setLoading(true);
+    setEpisodeLoaded(false);
 
-    if (!source) {
-      console.error('No suitable source found for the selected server and quality.');
-      setPlayerUrl('');
-    } else {
-      const animeId = episode.animeId;
-      const episodeNumber = episode.episodeNumber;
-      const quality = source.quality;
-      setPlayerUrl(`https://player.nekonode.net/?anime_id=${animeId}&episode=${episodeNumber}&quality=${quality}&server=${selectedServer}`);
+    // Simulate episode loading
+    const timer = setTimeout(() => {
+      setEpisodeLoaded(true);
+    }, 1000); // Simulate 1-second episode loading time
+
+    return () => clearTimeout(timer);
+  }, [selectedServer, episode]);
+
+  useEffect(() => {
+    if (episodeLoaded) {
+      console.log('Setting player URL');
+      const url = `http://localhost:4000/?anime_id=${episode.episodeId}&server=${selectedServer}`;
+      if (playerUrl !== url) {
+        setPlayerUrl(url);
+      }
+      setLoading(false);
     }
-  }, [serverSources, selectedQuality, selectedServer, episode]);
+  }, [episodeLoaded, selectedServer, episode, playerUrl]);
+
+  useEffect(() => {
+    // Pre-fetch the next episode data (example implementation)
+    if (episode && episode.nextEpisodeId) {
+      fetch(`http://localhost:4000/next_episode?anime_id=${episode.nextEpisodeId}`)
+        .then(response => response.json())
+        .then(data => setPrefetchedEpisode(data))
+        .catch(error => console.error('Error pre-fetching next episode:', error));
+    }
+  }, [episode]);
 
   const handleIframeLoad = () => {
+    console.log('Iframe loaded');
     setLoading(false);
   };
 
@@ -73,24 +59,23 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelect
       <h2 className="text-2xl font-bold text-yellow-500 mb-4 text-center">Episode {episode ? episode.episodeNumber : '0'}</h2>
       <div className="relative max-w-full" style={{ paddingBottom: '56.25%' }}>
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black">
+          <div className="absolute inset-0 flex items-center justify-center bg-black transition-opacity duration-500 opacity-100">
             <div className="w-16 h-16 border-4 border-blue-500 border-dotted rounded-full animate-spin"></div>
           </div>
         )}
-        {!loading && playerUrl && (
-          <div className="absolute top-0 left-0 w-full h-full">
-            <iframe
-              ref={iframeRef}
+        <div className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ${loading ? 'opacity-0' : 'opacity-100'}`}>
+          {playerUrl && (
+            <ReactIframe
+              url={playerUrl}
               width="100%"
               height="100%"
               allowFullScreen
               className="rounded-md shadow-lg"
-              src={playerUrl}
               loading="lazy"
-              onLoad={handleIframeLoad} // Handle iframe load event
-            ></iframe>
-          </div>
-        )}
+              onLoad={handleIframeLoad}
+            />
+          )}
+        </div>
         {!loading && !playerUrl && (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
             <p className="text-red-500">No suitable source found for the selected server and quality.</p>
@@ -101,7 +86,7 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelect
         <p className="font-bold">Select Server:</p>
       </div>
       <div className="flex justify-center mt-4 space-x-4">
-        <p className="font-bold text-sm">If one server isn&apos;t working, Try the next</p>
+        <p className="font-bold text-sm">If one server isn&apos;t working, try the next</p>
       </div>
       <div className="flex justify-center mt-4 space-x-4">
         <button
@@ -116,12 +101,6 @@ const EpisodePlayer = ({ episode, selectedQuality, setSelectedQuality, setSelect
         >
           StreamWish
         </button>
-        <CustomDropdown
-          label="Quality"
-          options={Array.isArray(serverSources) ? serverSources.map(source => source.quality) : []}
-          selectedOption={selectedQuality}
-          onSelect={setSelectedQuality}
-        />
       </div>
     </div>
   );

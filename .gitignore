@@ -12,6 +12,8 @@
 # next.js
 /.next/
 /out/
+websocket.js
+test.js
 
 # production
 /build
