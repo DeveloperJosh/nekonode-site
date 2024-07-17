@@ -31,7 +31,7 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
   useEffect(() => {
     if (episodeLoaded) {
       console.log('Setting player URL');
-      const url = `http://localhost:4000/?anime_id=${episode.episodeId}&server=${selectedServer}`;
+      const url = `https::/player.nekonode.net/?anime_id=${episode.nextEpisodeId}&server=${selectedServer}`;
       if (playerUrl !== url) {
         setPlayerUrl(url);
       }
@@ -42,7 +42,7 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
   useEffect(() => {
     // Pre-fetch the next episode data (example implementation)
     if (episode && episode.nextEpisodeId) {
-      fetch(`http://localhost:4000/next_episode?anime_id=${episode.nextEpisodeId}`)
+      fetch(`https::/player.nekonode.net/?anime_id=${episode.nextEpisodeId}&server=${selectedServer}`)
         .then(response => response.json())
         .then(data => setPrefetchedEpisode(data))
         .catch(error => console.error('Error pre-fetching next episode:', error));
