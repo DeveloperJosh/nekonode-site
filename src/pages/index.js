@@ -4,7 +4,6 @@ import AnimeList from '../components/AnimeList';
 import Timetable from '../components/Timetable';
 import TopAnimeList from '../components/TopAnimeList';
 import axios from 'axios';
-import { getNewsPosts } from '../lib/news';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -130,7 +129,6 @@ export async function getServerSideProps({ query }) {
         initialLatestAnime: latestResponse.data,
         topAnime: topAnimeResponse.data.results,
         initialPage,
-        newsPosts: getNewsPosts(),
       },
     };
   } catch (error) {
@@ -140,7 +138,6 @@ export async function getServerSideProps({ query }) {
         initialLatestAnime: [],
         topAnime: [],
         initialPage,
-        newsPosts: getNewsPosts(),
       },
     };
   }

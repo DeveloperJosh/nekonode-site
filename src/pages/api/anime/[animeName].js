@@ -9,11 +9,8 @@ const baseUrl = process.env.BASE_URL;
 
 export default async function handler(req, res) {
   let { animeName } = req.query;
+  
   let encodedAnimeName = encodeURIComponent(animeName);
-  // Reverse the list to replace longer numerals first
-  if (encodedAnimeName.includes('season-ii')) {
-    encodedAnimeName = encodedAnimeName.replace('season-ii', 'season-2');
-  }
 
   const cacheKey = `animeInfo_${encodedAnimeName}`;
 
@@ -24,7 +21,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // if anime name has season-ii make it season-2
     const response = await axios.get(`${baseUrl}/category/${encodedAnimeName}`);
     const $ = load(response.data);
 
@@ -53,11 +49,9 @@ export default async function handler(req, res) {
       const episodeTitle = $api(element).find('.name').text().trim();
       const episodeNumberMatch = episodeTitle.match(/EP (\d+)/i);
       const episodeNumber = episodeNumberMatch ? parseInt(episodeNumberMatch[1], 10) : null;
-      
-      // Remove / from id and trailing hyphen
+
       let id = episodeUrl.trim();
-      id = id.replace(/\//g, '')//.replace(/-episode-\d+/, '').replace(/-$/, '');
-      // rmove the last hyphen
+      id = id.replace(/\//g, '');
 
       if (episodeUrl && episodeTitle) {
         episodes.push({
@@ -69,19 +63,15 @@ export default async function handler(req, res) {
       }
     });
 
-    // Sort episodes by episode number
     episodes.sort((a, b) => a.episodeNumber - b.episodeNumber);
 
-    // Determine if "EP 0" exists
     const isEp0Found = episodes.some(ep => ep.title.toLowerCase().includes('ep 0'));
 
     if (isEp0Found) {
-      // Renumber episodes starting from 0
       episodes.forEach((episode, index) => {
         episode.episodeNumber = index;
       });
     } else {
-      // Renumber starting from 1
       episodes.forEach((episode, index) => {
         episode.episodeNumber = index + 1;
       });
@@ -125,13 +115,25 @@ export default async function handler(req, res) {
     };
 
     const responseData = { animeInfo, episodes };
-    
+
     // Cache the response data
     await setCache(cacheKey, responseData);
 
     res.json(responseData);
   } catch (error) {
     console.error('Error retrieving anime info:', error);
+
+    // Detailed error logging
+    if (error.response) {
+      console.log('Error Response Data:', error.response.data);
+      console.log('Error Response Status:', error.response.status);
+      console.log('Error Response Headers:', error.response.headers);
+    } else if (error.request) {
+      console.log('Error Request Data:', error.request);
+    } else {
+      console.log('Error Message:', error.message);
+    }
+
     console.log('Encoded anime name:', encodedAnimeName);
     res.status(500).json({ error: 'Failed to retrieve anime' });
   }

@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import Link from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import SearchBar from './SearchBar';
+import { Menu, Transition, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 
 const Navbar = () => {
   const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+//  const toggleMenu = () => {
+//    setIsMenuOpen(!isMenuOpen);
+//  };
 
   const handleLogout = () => {
     signOut();
@@ -42,19 +43,88 @@ const Navbar = () => {
           <SearchBar />
         </div>
         <div className="flex items-center space-x-2">
-          <div className="block md:hidden">
-            <button onClick={toggleMenu} className="text-gray-300 focus:outline-none">
+          <Menu as="div" className="relative block md:hidden">
+            <MenuButton className="text-gray-300 focus:outline-none">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"}></path>
               </svg>
-            </button>
-          </div>
+            </MenuButton>
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
+            >
+              <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-gray-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="py-1">
+                  <MenuItem>
+                    {({ focus }) => (
+                      <Link
+                        href="/"
+                        className={`block px-4 py-2 text-sm text-gray-300 ${focus ? 'bg-gray-600' : ''}`}
+                      >
+                        Home
+                      </Link>
+                    )}
+                  </MenuItem>
+                  <MenuItem>
+                    {({ focus }) => (
+                      <Link
+                        href="https://discord.gg/88ArBFRcY8"
+                        className={`block px-4 py-2 text-sm text-gray-300 ${focus ? 'bg-gray-600' : ''}`}
+                      >
+                        Discord
+                      </Link>
+                    )}
+                  </MenuItem>
+                  {status === "authenticated" ? (
+                    <>
+                      <MenuItem>
+                        {({ focus }) => (
+                          <Link
+                            href="/auth/profile"
+                            className={`block px-4 py-2 text-sm text-gray-300 ${focus ? 'bg-gray-600' : ''}`}
+                          >
+                            Profile
+                          </Link>
+                        )}
+                      </MenuItem>
+                      <MenuItem>
+                        {({ focus }) => (
+                          <button
+                            onClick={handleLogout}
+                            className={`block w-full text-left px-4 py-2 text-sm text-gray-300 ${focus ? 'bg-gray-600' : ''}`}
+                          >
+                            Logout
+                          </button>
+                        )}
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <MenuItem>
+                      {({ active }) => (
+                        <button
+                          onClick={() => signIn('discord')}
+                          className={`block w-full text-left px-4 py-2 text-sm text-gray-300 ${active ? 'bg-gray-600' : ''}`}
+                        >
+                          Login with Discord
+                        </button>
+                      )}
+                    </MenuItem>
+                  )}
+                </div>
+              </MenuItems>
+            </Transition>
+          </Menu>
           <div className="hidden md:flex space-x-2">
             <Link href="/" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
               Home
             </Link>
-            <Link href="/news" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
-              News
+            <Link href="https://discord.gg/88ArBFRcY8" className="bg-yellow-500 text-gray-800 px-3 sm:px-4 py-1 sm:py-2 rounded hover:bg-yellow-600">
+              Discord
             </Link>
             {status === "authenticated" ? (
               <>
@@ -81,38 +151,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      {isMenuOpen && (
-        <div className="md:hidden bg-gray-700 rounded-lg shadow-lg mt-2">
-          <Link href="/" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
-            Home
-          </Link>
-          <Link href="/news" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
-            News
-          </Link>
-          {status === "authenticated" ? (
-            <>
-              <Link href="/auth/profile" className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600">
-                Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="block text-gray-300 hover:text-white py-2 px-4 w-full text-left border-t border-gray-600"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => signIn('discord')}
-                className="block text-gray-300 hover:text-white py-2 px-4 border-b border-gray-600"
-              >
-                Login with Discord
-              </button>
-            </>
-          )}
-        </div>
-      )}
     </nav>
   );
 };

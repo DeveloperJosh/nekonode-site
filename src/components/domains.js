@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Disclosure, Transition, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
+import Link from 'next/link';
 
 export default function DomainsTable({ domains }) {
   return (
@@ -9,7 +10,7 @@ export default function DomainsTable({ domains }) {
       <div className="w-full px-4 pt-2">
         <div className="bg-gray-700 p-4 rounded-md mb-2">
           <p className="text-lg font-medium text-gray-300">Main Domain</p>
-          <p className="text-gray-400">{domains.main}</p>
+          <Link href={`https://${domains.main}`} className="text-gray-400">{domains.main}</Link>
         </div>
         <Disclosure>
           {({ open }) => (
@@ -34,8 +35,7 @@ export default function DomainsTable({ domains }) {
                 <DisclosurePanel className="pt-4 pb-2 text-sm text-gray-400">
                   <ul>
                     {domains.mirrors.map((domain, index) => (
-                      <li key={index} className="py-1">{domain}</li>
-                    ))}
+                      <Link href={`https://${domain}`} key={index}><li className="py-1">{domain}</li></Link>))}
                   </ul>
                 </DisclosurePanel>
               </Transition>

@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import UpdateToList from '@/components/UpdateToList';
+// add headlessui 
+import { TabGroup, TabList, Tab } from '@headlessui/react';
+
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -236,7 +239,13 @@ const Dashboard = () => {
 
         {activeTab === 'settings' && (
           <div className="text-center">
-            <p className="text-lg sm:text-xl">User settings panel here</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-yellow-500 mb-4 sm:mb-6">Auto Play Settings</h3>
+            <div className="flex justify-center items-center space-x-4">
+              <label htmlFor="autoplay" className="text-lg sm:text-xl">Auto Play:</label>
+              <input type="checkbox" id="autoplay" name="autoplay" className="w-6 h-6" />
+              <label htmlFor="preload" className="text-lg sm:text-xl">Preload:</label>
+              <input type="checkbox" id="preload" name="preload" className="w-6 h-6" />
+            </div>
           </div>
         )}
 

@@ -18,7 +18,11 @@ export default async function handler(req, res) {
       const episodes = [];
 
       $('div.last_episodes.loaddub > ul > li').each((i, el) => {
-        const id = $(el).find('a').attr('href')?.split('/')[1]?.split('-episode')[0];
+        let id = $(el).find('a').attr('href')?.split('/')[1]?.split('-episode')[0];
+        // in rare cases, the id might have ii instead of 2 (e.g. overlord-season-ii)
+        if (id.includes('season-ii')) {
+          id = id.replace('season-ii', 'season-2');
+        }
         const episodeId = $(el).find('a').attr('href')?.split('/')[1];
         const episodeNumber = parseFloat($(el).find('p.episode').text().replace('Episode ', ''));
         let title = $(el).find('p.name > a').attr('title');
