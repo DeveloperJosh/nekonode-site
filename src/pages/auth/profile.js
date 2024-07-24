@@ -5,9 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import UpdateToList from '@/components/UpdateToList';
-// add headlessui 
-import { TabGroup, TabList, Tab } from '@headlessui/react';
-
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -21,6 +18,12 @@ const Dashboard = () => {
   const [okMessage, setOkMessage] = useState('');
   const [selectedAnime, setSelectedAnime] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    autoplay: false,
+    preload: false,
+    only_dub: false,
+    only_sub: false,
+  });
 
   useEffect(() => {
     if (session) {
@@ -57,6 +60,18 @@ const Dashboard = () => {
 
         fetchComments();
       }
+
+      const fetchSettings = async () => {
+        try {
+          const response = await axios.get('/api/settings');
+          setSettings(response.data);
+        } catch (error) {
+          console.error('Error fetching user settings:', error);
+          setError('Failed to fetch user settings');
+        }
+      };
+
+      fetchSettings();
     }
   }, [session]);
 
@@ -127,6 +142,23 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to update anime status:', error);
       setError('Failed to update anime status');
+    }
+  };
+
+  const handleSettingChange = (setting) => {
+    setSettings({ ...settings, [setting]: !settings[setting] });
+    updateSettings(setting, !settings[setting]);
+  };
+
+  const updateSettings = async (setting, value) => {
+    try {
+      await axios.put('/api/settings', {
+        [setting]: value,
+      });
+      setOkMessage('Settings updated successfully.');
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      setError('Failed to update settings');
     }
   };
 
@@ -239,12 +271,52 @@ const Dashboard = () => {
 
         {activeTab === 'settings' && (
           <div className="text-center">
-            <h3 className="text-xl sm:text-2xl font-bold text-yellow-500 mb-4 sm:mb-6">Auto Play Settings</h3>
-            <div className="flex justify-center items-center space-x-4">
-              <label htmlFor="autoplay" className="text-lg sm:text-xl">Auto Play:</label>
-              <input type="checkbox" id="autoplay" name="autoplay" className="w-6 h-6" />
-              <label htmlFor="preload" className="text-lg sm:text-xl">Preload:</label>
-              <input type="checkbox" id="preload" name="preload" className="w-6 h-6" />
+            <h3 className="text-xl sm:text-2xl font-bold text-yellow-500 mb-4 sm:mb-6">Settings</h3>
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center justify-between">
+                <label htmlFor="autoplay" className="text-lg sm:text-xl">Auto Play:</label>
+                <input 
+                  type="checkbox" 
+                  id="autoplay" 
+                  name="autoplay" 
+                  className="w-6 h-6" 
+                  checked={settings.autoplay} 
+                  onChange={() => handleSettingChange('autoplay')}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="preload" className="text-lg sm:text-xl">Preload:</label>
+                <input 
+                  type="checkbox" 
+                  id="preload" 
+                  name="preload" 
+                  className="w-6 h-6" 
+                  checked={settings.preload} 
+                  onChange={() => handleSettingChange('preload')}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="only_dub" className="text-lg sm:text-xl">Only Dub:</label>
+                <input 
+                  type="checkbox" 
+                  id="only_dub" 
+                  name="only_dub" 
+                  className="w-6 h-6" 
+                  checked={settings.only_dub} 
+                  onChange={() => handleSettingChange('only_dub')}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="only_sub" className="text-lg sm:text-xl">Only Sub:</label>
+                <input 
+                  type="checkbox" 
+                  id="only_sub" 
+                  name="only_sub" 
+                  className="w-6 h-6" 
+                  checked={settings.only_sub} 
+                  onChange={() => handleSettingChange('only_sub')}
+                />
+              </div>
             </div>
           </div>
         )}

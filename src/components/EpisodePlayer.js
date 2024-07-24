@@ -9,7 +9,6 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
 
   useEffect(() => {
     if (!episode || !episode.episodeId) {
-      console.log('No episode or episode ID available');
       setPlayerUrl('');
       setLoading(false);
       return;
@@ -28,7 +27,6 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
 
   useEffect(() => {
     if (episodeLoaded) {
-      console.log('Setting player URL');
       const url = `https://player.nekonode.net/?anime_id=${episode.episodeId}&server=${selectedServer}`;
       setPlayerUrl(url);
       setLoading(false);
@@ -36,7 +34,6 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
   }, [episodeLoaded, selectedServer, episode]);
 
   const handleIframeLoad = () => {
-    console.log('Iframe loaded');
     setLoading(false);
   };
 
@@ -55,7 +52,7 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
               url={playerUrl}
               width="100%"
               height="100%"
-              allowFullScreen
+              allow='fullscreen'
               className="rounded-md shadow-lg"
               loading="lazy"
               onLoad={handleIframeLoad}

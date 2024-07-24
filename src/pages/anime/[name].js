@@ -31,7 +31,6 @@ const AnimePage = () => {
 
   const fetchEpisodeDetails = useCallback((episode) => {
     const { episodeNumber, id } = episode;
-    console.log('Fetching episode details:', episode);
     setSelectedEpisode({
       episodeNumber,
       episodeId: id,

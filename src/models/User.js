@@ -14,6 +14,12 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   image: { type: String },
+  settings : {
+    autoplay: { type: Boolean, default: false },
+    preload: { type: Boolean, default: false },
+    only_dub: { type: Boolean, default: false },
+    only_sub: { type: Boolean, default: false },
+  },
   role: { type: String, enum: ['user', 'moderator', 'admin'], default: 'user' },
   banned: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

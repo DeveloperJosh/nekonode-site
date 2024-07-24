@@ -51,6 +51,12 @@ export const authOptions = {
             name: user.name,
             email: user.email,
             image: user.image,
+            settings: {
+              autoplay: true,
+              preload: false,
+              only_dub: false,
+              only_sub: false,
+            },
             role: 'user',
             banned: false,
             createdAt: Date.now(),
