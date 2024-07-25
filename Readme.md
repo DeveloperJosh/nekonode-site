@@ -46,8 +46,6 @@ Enjoy your favorite shows with English subs or dubs hassle-free, no sign-up requ
 - [Node.js](https://nodejs.org/en/): I recommend using the latest LTS version.
 - [Redis](https://redis.io/): for caching the API responses.
 - [MongoDB](https://www.mongodb.com/): for storing the user data.
-- [Hostinger](https://www.hostinger.com/): for the email service.
-- [CryptoJS](https://cryptojs.gitbook.io/docs/): for encrypting the user data. Add keys to your .env file.
 - [Player](https://github.com/DeveloperJosh/player-nekonode-site): for streaming the videos.
 - GogoCDN: For fetching the video links. Add the URL to your .env file.
 
@@ -75,12 +73,8 @@ Enjoy your favorite shows with English subs or dubs hassle-free, no sign-up requ
     JWT_SECRET=""
     MONGO_URL=""
     BASE_URL="https://gogoanime3.co"
-    CRYPTO_KEY=""
-    CRYPTO_SECOND_KEY=""
-    CRYPTO_IV=""
     REDIS_URL=""
     AJAX_URL=""
-    HEARTBEAT="" # Not required
     DISCORD_CLIENT_ID=""
     DISCORD_CLIENT_SECRET=""
     NEXTAUTH_URL=http://localhost:3000 #your domain

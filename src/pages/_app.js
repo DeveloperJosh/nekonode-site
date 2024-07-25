@@ -2,10 +2,8 @@ import '../styles/globals.css';
 import { useEffect } from 'react';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
-import SearchBar from '../components/SearchBar';
 import CookieConsent from "react-cookie-consent";
 import Footer from '../components/Footer';
-import Heartbeat from '@/components/Heartbeat';
 import { SessionProvider } from "next-auth/react";
 
 function MyApp({ Component, pageProps }) {
@@ -33,7 +31,6 @@ function MyApp({ Component, pageProps }) {
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex-grow">
           <Component {...pageProps} />
-          <Heartbeat />
           <CookieConsent
             location="bottom"
             buttonText="Yes I do!"

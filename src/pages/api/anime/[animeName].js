@@ -78,6 +78,7 @@ export default async function handler(req, res) {
     }
 
     let anime = req.query.animeName;
+
     anime = anime.replace(/\s+/g, '-').toLowerCase();
     anime = anime.replace(/:/g, '');
     const encodedAnime = encodeURIComponent(anime);
