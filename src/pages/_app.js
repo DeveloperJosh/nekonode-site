@@ -5,6 +5,9 @@ import Navbar from '../components/Navbar';
 import CookieConsent from "react-cookie-consent";
 import Footer from '../components/Footer';
 import { SessionProvider } from "next-auth/react";
+import { GoogleAnalytics } from '@next/third-parties/google'
+
+const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS;
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -31,6 +34,7 @@ function MyApp({ Component, pageProps }) {
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex-grow">
           <Component {...pageProps} />
+          <GoogleAnalytics gaId={GA_TRACKING_ID} />
           <CookieConsent
             location="bottom"
             buttonText="Yes I do!"

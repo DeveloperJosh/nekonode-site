@@ -15,7 +15,7 @@ const TopAnimeList = ({ topAnime }) => {
       <div className="grid grid-cols-1 gap-4">
         {topAnime.map((anime) => (
           <Link href={`/anime/${anime.id}`} passHref key={anime.id}>
-            <div className="bg-gray-700 p-2 rounded-lg shadow-lg flex items-start space-x-2 cursor-pointer">
+            <div className="bg-gray-700 p-2 rounded-lg shadow-lg flex items-start space-x-2 cursor-pointer transform transition-transform duration-300 hover:bg-gray-600 hover:scale-105">
               <Image 
                 src={anime.image} 
                 alt={anime.title} 

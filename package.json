@@ -12,6 +12,7 @@
   "dependencies": {
     "@headlessui/react": "^2.1.2",
     "@heroicons/react": "^2.1.5",
+    "@next/third-parties": "^14.2.5",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "cache-manager": "^5.6.1",
