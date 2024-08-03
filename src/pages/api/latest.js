@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       //  }
       if (id.endsWith('season-ii')) {
         id = id.replace('season-ii', 'season-2');
-        console.log('replaced season-ii with season-2');
+       // console.log('replaced season-ii with season-2');
       }
         const episodeId = $(el).find('a').attr('href')?.split('/')[1];
         const episodeNumber = parseFloat($(el).find('p.episode').text().replace('Episode ', ''));
