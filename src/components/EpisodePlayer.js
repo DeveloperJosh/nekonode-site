@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import ReactIframe from 'react-iframe';
 
+const player_url = 'https://nekoplayer.xyz/';
+
 const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
   const [loading, setLoading] = useState(true);
   const [playerUrl, setPlayerUrl] = useState('');
@@ -27,7 +29,7 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
 
   useEffect(() => {
     if (episodeLoaded) {
-      const url = `https://player.nekonode.net/?anime_id=${episode.episodeId}&server=${selectedServer}`;
+      const url = `${player_url}?anime_id=${episode.episodeId}&server=${selectedServer}`;
       setPlayerUrl(url);
       setLoading(false);
     }
