@@ -38,7 +38,7 @@ function MyApp({ Component, pageProps }) {
           <CookieConsent
             location="bottom"
             buttonText="Yes I do!"
-            cookieName="myAwesomeCookieName2"
+            cookieName="COOKIE_CONSENT"
              style={{ background: "#2B373B" }}
              buttonStyle={{ color: "#4e503b", fontSize: "13px" }}
               expires={150}

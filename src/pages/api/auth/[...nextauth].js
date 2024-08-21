@@ -62,7 +62,6 @@ export const authOptions = {
             createdAt: Date.now(),
             updatedAt: Date.now(),
           });
-          console.log('User created:', existingUser);
         } catch (error) {
           console.error('Error creating user:', error);
           return false;
@@ -75,9 +74,6 @@ export const authOptions = {
 
       return true;
     },
-  },
-  pages: {
-    signIn: '/auth/signin',  // Custom sign-in page URL
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',  // Enable debug mode
