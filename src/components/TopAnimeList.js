@@ -27,7 +27,7 @@ const TopAnimeList = ({ topAnime }) => {
                 <h3 className="text-xl text-gray-300 font-bold">{truncateText(anime.title, 30)}</h3>
                 <p className="text-gray-300">Episode: {anime.episodeNumber}</p>
                 <p className="text-gray-300">Language: {anime.title.includes('Dub') ? ' Dub' : ' Sub'}</p>
-                <p className="text-gray-300">Rating: Coming Soon</p>
+                <p className="text-gray-300">Watch Now</p>
               </div>
             </div>
           </Link>

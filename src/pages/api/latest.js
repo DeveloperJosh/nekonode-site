@@ -8,58 +8,67 @@ const ajaxUrl = process.env.AJAX_URL;
 
 export default async function handler(req, res) {
   try {
-    const page = req.query.page || 1;
-    const type = req.query.type || 1;
+    const page = parseInt(req.query.page) || 1;
+    const type = parseInt(req.query.type) || 1;
     const includeNextPage = req.query.next === 'true';
 
-    const fetchEpisodes = async (url) => {
-      const response = await axios.get(url);
-      const $ = load(response.data);
-      const episodes = [];
+    const fetchEpisodes = async (pageNumber) => {
+      try {
+        const url = `${ajaxUrl}/page-recent-release.html?page=${pageNumber}&type=${type}`;
+        const response = await axios.get(url);
+        const $ = load(response.data);
+        const episodes = [];
 
-      $('div.last_episodes.loaddub > ul > li').each((i, el) => {
-        let id = $(el).find('a').attr('href')?.split('/')[1]?.split('-episode')[0];
-        // in rare cases, the id might have ii instead of 2 (e.g. overlord-season-ii)
-      //  if (id.includes('season-ii')) {
-      //    id = id.replace('season-ii', 'season-2');
-      //  }
-      if (id.endsWith('season-ii')) {
-        id = id.replace('season-ii', 'season-2');
-       // console.log('replaced season-ii with season-2');
-      }
-        const episodeId = $(el).find('a').attr('href')?.split('/')[1];
-        const episodeNumber = parseFloat($(el).find('p.episode').text().replace('Episode ', ''));
-        let title = $(el).find('p.name > a').attr('title');
-        const image = $(el).find('div > a > img').attr('src');
-        let url = `${baseUrl}${$(el).find('a').attr('href')?.trim()}`;
-        if (!title) {
-          title = id.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-        }
+        $('div.last_episodes.loaddub > ul > li').each((i, el) => {
+          let id = $(el)
+            .find('a')
+            .attr('href')
+            ?.split('/')[1]
+            ?.split('-episode')[0];
 
-        episodes.push({
-          id,
-          episodeId,
-          episodeNumber,
-          title,
-          image,
-          url,
+          if (id && id.endsWith('season-ii')) {
+            id = id.replace('season-ii', 'season-2');
+          }
+
+          const episodeId = $(el).find('a').attr('href')?.split('/')[1];
+          const episodeNumber = parseFloat(
+            $(el).find('p.episode').text().replace('Episode ', '')
+          );
+          let title = $(el).find('p.name > a').attr('title');
+          const image = $(el).find('div > a > img').attr('src');
+          const url = `${baseUrl}${$(el).find('a').attr('href')?.trim()}`;
+
+          if (!title && id) {
+            title = id
+              .replace(/-/g, ' ')
+              .replace(/\b\w/g, (l) => l.toUpperCase());
+          }
+
+          episodes.push({
+            id,
+            episodeId,
+            episodeNumber,
+            title,
+            image,
+            url,
+          });
         });
-      });
 
-      const nextPage = $('div.anime_name_pagination.intro > div > ul > li').last().next().find('a').attr('href');
-      return { episodes, nextPage };
+        return episodes;
+      } catch (error) {
+        console.error(`Error fetching page ${pageNumber}:`, error.message);
+        return [];
+      }
     };
 
-    const { episodes: latestEpisodes, nextPage } = await fetchEpisodes(`${ajaxUrl}/page-recent-release.html?page=${page}&type=${type}`);
+    const fetchPromises = [fetchEpisodes(page)];
 
-    let allEpisodes = [...latestEpisodes];
-    if (includeNextPage && nextPage && nextPage !== `?page=${page}`) {
-      const nextPageNumber = nextPage.match(/\?page=(\d+)/)[1];
-      if (nextPageNumber > page) {
-        const { episodes: nextPageEpisodes } = await fetchEpisodes(`${ajaxUrl}${nextPage}`);
-        allEpisodes = [...allEpisodes, ...nextPageEpisodes];
-      }
+    if (includeNextPage) {
+      fetchPromises.push(fetchEpisodes(page + 1));
     }
+
+    const results = await Promise.all(fetchPromises);
+    const allEpisodes = results.flat();
 
     res.status(200).json(allEpisodes);
   } catch (error) {
