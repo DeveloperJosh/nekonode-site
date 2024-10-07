@@ -107,7 +107,7 @@ const EpisodePlayer = ({ episode, setSelectedServer, selectedServer }) => {
       </div>
       <div className="flex justify-center mt-4">
         <p className="font-bold text-sm">
-          If one server isn't working, try the next
+          If one server isn&apos;t working, try the next
         </p>
       </div>
     </div>
