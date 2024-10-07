@@ -13,7 +13,6 @@ export default async function handler(req, res) {
   let encodedAnimeName = encodeURIComponent(animeName);
   const cacheKey = `animeInfo_${encodedAnimeName}`;
 
-  // Check if the response is already cached
   const cachedData = await getCache(cacheKey);
   if (cachedData) {
     return res.json(cachedData);
