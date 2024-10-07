@@ -36,15 +36,19 @@ export default async function handler(req, res) {
       image: $('.anime_info_body_bg img').attr('src') || 'No Image Available',
       description: $('.description').text().trim() || 'No description available.',
       status: $('span:contains("Status:")').next().text().trim() || 'Unknown Status',
-      genres: $('span:contains("Genre:")')
-        .next()
+      genres: $('p:contains("Genre:")')
         .find('a')
         .map((_, el) => $(el).text().trim())
         .get()
         .filter(Boolean),
-      released: $('span:contains("Released:")').parent().text().replace('Released:', '').trim() || 'Unknown Release Date',
-      totalEpisodes: parseInt($('#episode_page a').last().attr('ep_end'), 10) || 'Not Available',
-    };
+      released: $('span:contains("Released:")')
+        .parent()
+        .text()
+        .replace('Released:', '')
+        .trim() || 'Unknown Release Date',
+      totalEpisodes:
+        parseInt($('#episode_page a').last().attr('ep_end'), 10) || 'Not Available',
+    };    
 
     // Fetch episode list
     const apiUrl = 'https://ajax.gogocdn.net/ajax/load-list-episode';
